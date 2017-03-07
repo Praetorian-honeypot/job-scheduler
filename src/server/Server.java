@@ -3,14 +3,15 @@ package server;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.util.Observable;
+import java.util.logging.Logger;
 
 public class Server extends Observable implements Runnable {
+	private transient static final Logger logger = Logger.getLogger( Server.class.getName() );
+	private InetSocketAddress address;
+	private DatagramSocket datagramSocket;
 	
-	private InetSocketAddress serverAddress;
-	private DatagramSocket serverDatagramSocket;
-	
-	public Server(InetSocketAddress serverAddress) {
-		this.serverAddress = serverAddress;
+	public Server(InetSocketAddress address) {
+		this.address = address;
 	}
 	
 	@Override
@@ -19,20 +20,20 @@ public class Server extends Observable implements Runnable {
 		this.notifyObservers();
 	}
 
-	public InetSocketAddress getServerAddress() {
-		return serverAddress;
+	public InetSocketAddress getAddress() {
+		return address;
 	}
 
-	public void setServerAddress(InetSocketAddress serverAddress) {
-		this.serverAddress = serverAddress;
+	public void setAddress(InetSocketAddress address) {
+		this.address = address;
 	}
 
-	public DatagramSocket getServerDatagramSocket() {
-		return serverDatagramSocket;
+	public DatagramSocket getDatagramSocket() {
+		return datagramSocket;
 	}
 
-	public void setServerDatagramSocket(DatagramSocket serverDatagramSocket) {
-		this.serverDatagramSocket = serverDatagramSocket;
+	public void setDatagramSocket(DatagramSocket datagramSocket) {
+		this.datagramSocket = datagramSocket;
 	}
 	
 }

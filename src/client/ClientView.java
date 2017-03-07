@@ -1,12 +1,12 @@
-package server;
+package client;
 import java.util.Observable;
 import java.util.Observer;
 
-public class ServerView extends javax.swing.JFrame implements Observer {
+public class ClientView extends javax.swing.JFrame implements Observer {
 	private static final long serialVersionUID = -5346255320116138428L;
-	Server model;
+	Client model;
 
-    public ServerView(Server model) {
+    public ClientView(Client model) {
         this.model = model;
         model.addObserver(this);
         initComponents();
@@ -25,9 +25,6 @@ public class ServerView extends javax.swing.JFrame implements Observer {
         messageField = new javax.swing.JTextPane();
         jLabel5 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        clientsField = new javax.swing.JTextPane();
-        jLabel6 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         hostnameLabel = new javax.swing.JLabel();
         portLabel = new javax.swing.JLabel();
@@ -54,26 +51,6 @@ public class ServerView extends javax.swing.JFrame implements Observer {
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
-        );
-
-        clientsField.setEditable(false);
-        jScrollPane1.setViewportView(clientsField);
-
-        jLabel6.setText("Clients:");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -130,15 +107,12 @@ public class ServerView extends javax.swing.JFrame implements Observer {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextPane clientsField;
     private javax.swing.JLabel hostnameLabel;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextPane messageField;
     private javax.swing.JLabel portLabel;
@@ -152,6 +126,5 @@ public class ServerView extends javax.swing.JFrame implements Observer {
         setTitle(model.getAddress().toString());
 
 		messageField.setText("Nothing");
-        clientsField.setText("No clients");
     }
 }
