@@ -1,0 +1,20 @@
+{% extends 'scheduler_web/base.html' %}
+{% load staticfiles %}
+{% block content %}
+<h1>Jobs</h1>
+
+<table class="table">
+    <tr>
+        <th>Command</th>
+        <th>Priority</th>
+        <th>Date entered</th>
+    </tr>
+    {% for job in job_list %}
+    <tr>
+        <td>{{ job.command }}</td>
+        <td>{{ job.priority }}</td>
+        <td>{{ job.enteredDate }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

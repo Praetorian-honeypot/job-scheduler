@@ -1,0 +1,88 @@
+{% extends 'scheduler_web/base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<a href="{% url 'servers' %}">
+<button type="button" class="btn btn-default btn-lg" >
+    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true" ></span> All Servers
+</button>
+</a>
+
+<h1 >{{ server.groupPath }}{{ server.hostname }}</h1>
+
+<table class="table">
+    <tr>    <td><b>Hostname</b></td><td>{{ server.groupPath }}<b>{{ server.hostname }}</b></td> </tr>
+    <tr>    <td><b>CPU</b></td><td>{{ server.cpuName }} ({{server.cpuCores}} cores)</td>    <tr>
+    <tr>    <td><b>Memory Amount</b></td><td>{{ server.memoryAmount }} GB</td>  <tr>
+</table>
+
+<div class="panel panel-default">
+
+  <div class="panel-body">
+      <h4> <span class="glyphicon glyphicon-flash" aria-hidden="true" ></span> CPU Load </h4>
+      <div class="progress">
+    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ load.cpuLoadPercentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ load.cpuLoadPercentage }}%">
+      {{ load.cpuLoadPercentage }}%
+    </div>
+  </div>
+
+  <h4> <span class="glyphicon glyphicon-tasks" aria-hidden="true" ></span> Memory Usage </h4>
+  <div class="progress">
+<div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="{{ load.memoryLoadPercentage }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ load.memoryLoadPercentage }}%">
+  {{ load.memoryLoadPercentage }}%
+</div>
+</div>
+  </div>
+</div>
+
+<table class="table">
+    <tr>
+        <td><b>Date</b></td><td>{{ load.date }}<</td>
+        <td><b>CPU load</b></td><td>{{ load.cpuLoad }}</td>
+        <td><b>Memory usage</b></td><td>{{ load.memoryLoad }} GB</td>
+    </tr>
+</table>
+<a href='{% url 'loadMeasurementsCSV' server.pk %}'> CSV </a>
+
+<div id="cpuPlot"></div>
+
+<script type="text/javascript">
+Plotly.d3.csv('{% url 'loadMeasurementsCSV' server.pk %}', function(err, rows){
+function unpack(rows, key) {
+  return rows.map(function(row) { return row[key]; });
+};
+
+var trace1 = {
+        x: unpack(rows,'date'),
+        y: unpack(rows,'cpuLoad').map(function(x) {
+            return (100.0 * x / {{ server.cpuCores }}).toFixed(1)
+        }),
+        text: unpack(rows,'cpuLoad').map(function(x) {
+            return x + ' (' + {{ server.cpuCores }} + ' cores)';
+        }),
+        type: 'scatter'
+};
+
+var trace2 = {
+        x: unpack(rows,'date'),
+        y: unpack(rows,'memoryLoad'),
+        text: unpack(rows,'memoryLoad').map(function(x) { return (100.0 * x / {{ server.memoryAmount }}).toFixed(1)+ '% (' +{{ server.memoryAmount }}.toFixed(1)+ ' GB)'; }),
+        type: 'scatter',
+        xaxis: 'x2',
+        yaxis: 'y2',
+};
+
+var layout = {
+  xaxis: {title: 'Measurement Date', domain: [0, 0.45]},
+  yaxis: {title: 'CPU Load (%)'},
+  xaxis2: {title: 'Measurement Date', domain: [0.55, 1]},
+  yaxis2: {title: 'Memory Usage (GB)', anchor: 'x2'},
+};
+
+data = [trace1, trace2];
+
+Plotly.newPlot('cpuPlot', data, layout);
+});
+</script>
+
+{% endblock %}
