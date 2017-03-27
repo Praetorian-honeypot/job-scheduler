@@ -1,0 +1,20 @@
+{% extends 'scheduler_web/base.html' %}
+{% load staticfiles %}
+{% block content %}
+<h1 >Servers</h1>
+
+<table class="table">
+    <tr>
+        <th>Hostname</th>
+        <th>CPU</th>
+        <th>Memory</th>
+    </tr>
+    {% for ser in server_list %}
+    <tr>
+        <td>{{ ser.groupPath }}<b><a href="{% url 'serverDetail' ser.pk %}">{{ ser.hostname }}</a></b></td>
+        <td>{{ ser.cpuName }}</td>
+        <td>{{ ser.memoryAmount }} GB</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
