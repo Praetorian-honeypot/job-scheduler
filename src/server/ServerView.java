@@ -1,15 +1,31 @@
 package server;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
+
 public class ServerView extends javax.swing.JFrame implements Observer {
 	private static final long serialVersionUID = -5346255320116138428L;
-	Server model;
+	Server server;
 
-    public ServerView(Server model) {
-        this.model = model;
-        model.addObserver(this);
+    public ServerView(Server server) {
+    	setResizable(false);
+        this.server = server;
+        server.addObserver(this);
         initComponents();
+        this.setSize(new Dimension(1150,490));
     }
 
     /** This method is called from within the constructor to
@@ -19,139 +35,122 @@ public class ServerView extends javax.swing.JFrame implements Observer {
      */
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        messageField = new javax.swing.JTextPane();
-        jLabel5 = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        clientsField = new javax.swing.JTextPane();
-        jLabel6 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        hostnameLabel = new javax.swing.JLabel();
-        portLabel = new javax.swing.JLabel();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Field");
-        setName("frame");
-
-        messageField.setEditable(false);
-        jScrollPane2.setViewportView(messageField);
-
-        jLabel5.setText("Messages:");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jLabel5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
-        );
-
-        clientsField.setEditable(false);
-        jScrollPane1.setViewportView(clientsField);
-
-        jLabel6.setText("Clients:");
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        hostnameLabel.setText("hostname:");
-
-        portLabel.setText("port:");
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(hostnameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-            .addComponent(portLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 144, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(hostnameLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(portLabel)
-                .addContainerGap(379, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-
-        pack();
+    	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		contentPane = new JPanel();
+		contentPane.setBorder(null);
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBounds(678, 5, 458, 452);
+		contentPane.add(panel_2);
+		
+		lblClients = new JLabel("Clients:");
+		lblClients.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		JScrollPane scrollPane_1 = new JScrollPane();
+		GroupLayout gl_panel_2 = new GroupLayout(panel_2);
+		gl_panel_2.setHorizontalGroup(
+			gl_panel_2.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_2.createSequentialGroup()
+					.addContainerGap()
+					.addGroup(gl_panel_2.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblClients, GroupLayout.PREFERRED_SIZE, 269, GroupLayout.PREFERRED_SIZE)
+						.addComponent(scrollPane_1, GroupLayout.PREFERRED_SIZE, 438, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+		);
+		gl_panel_2.setVerticalGroup(
+			gl_panel_2.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_2.createSequentialGroup()
+					.addComponent(lblClients)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(scrollPane_1, GroupLayout.PREFERRED_SIZE, 421, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+		);
+		
+		clientsField = new JTextPane();
+		scrollPane_1.setViewportView(clientsField);
+		panel_2.setLayout(gl_panel_2);
+		
+		JPanel panel = new JPanel();
+		panel.setBounds(5, 5, 215, 439);
+		contentPane.add(panel);
+		
+		JButton btnDisconnectFromServer = new JButton("Request CPU load");
+		btnDisconnectFromServer.setBounds(0, 140, 215, 23);
+		btnDisconnectFromServer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				server.requestCPULoad();
+			}
+		});
+		panel.setLayout(null);
+		panel.add(btnDisconnectFromServer);
+		
+		lblPort = new JLabel("Port: ");
+		lblPort.setBounds(10, 11, 195, 32);
+		panel.add(lblPort);
+		lblPort.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		lblAddress = new JLabel("Address:");
+		lblAddress.setBounds(10, 46, 195, 32);
+		panel.add(lblAddress);
+		lblAddress.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		JLabel lblServer = new JLabel("Server:");
+		lblServer.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblServer.setBounds(10, 78, 195, 32);
+		panel.add(lblServer);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBounds(221, 5, 458, 452);
+		contentPane.add(panel_1);
+		
+		JLabel lblLogger = new JLabel("Logger:");
+		lblLogger.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		JScrollPane scrollPane = new JScrollPane();
+		GroupLayout gl_panel_1 = new GroupLayout(panel_1);
+		gl_panel_1.setHorizontalGroup(
+			gl_panel_1.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addComponent(lblLogger, GroupLayout.PREFERRED_SIZE, 269, GroupLayout.PREFERRED_SIZE)
+					.addGap(38))
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addGap(10)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+					.addContainerGap())
+		);
+		gl_panel_1.setVerticalGroup(
+			gl_panel_1.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panel_1.createSequentialGroup()
+					.addComponent(lblLogger)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
+					.addContainerGap())
+		);
+		
+		messageField = new JTextPane();
+		scrollPane.setViewportView(messageField);
+		panel_1.setLayout(gl_panel_1);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextPane clientsField;
-    private javax.swing.JLabel hostnameLabel;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextPane messageField;
-    private javax.swing.JLabel portLabel;
+    private JPanel contentPane;
+	private JLabel lblAddress;
+	private JLabel lblPort;
+	private JLabel lblClients;
+	private JTextPane messageField;
+	private JTextPane clientsField;
     // End of variables declaration//GEN-END:variables
 
 
     public void update(Observable ob, Object o) {
-        hostnameLabel.setText("adress: " + model.getAddress());
-        portLabel.setText("port: " + model.getAddress().getPort());
+    	lblAddress.setText("Adress: " + server.getAddress());
+        lblPort.setText("port: " + server.getAddress().getPort());
 
-        setTitle(model.getAddress().toString());
+        setTitle(server.getAddress().toString());
 
-		messageField.setText("Nothing");
-        clientsField.setText("No clients");
+        messageField.setText(server.getLoggerText());
+        clientsField.setText(server.getClientsText());
     }
 }

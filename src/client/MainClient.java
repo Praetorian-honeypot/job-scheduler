@@ -6,6 +6,9 @@ public class MainClient {
 	public static void main(String args[]) {
 		String address = "localhost";
 		int port = 8901;
+		if (args.length == 1) {
+			port = Integer.parseInt(args[0]);
+		}
 		
 		InetSocketAddress clientAddress = new InetSocketAddress(address, port);
 		Client client = new Client(clientAddress);
