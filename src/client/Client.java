@@ -111,8 +111,21 @@ public class Client extends Observable implements Runnable {
 		}
 	}
 
-	public void disconnect() {
-		logger.log(Level.FINE, "Client is disconnecting...");
+	public void disconnect() throws InterruptedException {
+		if (serverSocket.isClosed()) {
+			log("Already disconnected from server!");
+			return;
+		}
+		
+		sendDisconnect();
+		Thread.sleep(50);
+		try {
+			serverSocket.close();
+		} catch (IOException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
+		}
+		clientInputHandler.terminate();
+		log("Client succesfully disconnected from server.");
 	}
 
 	public void sendReport() {
@@ -136,11 +149,23 @@ public class Client extends Observable implements Runnable {
 			connectData.put("type", "connect");
 			connectData.put("address", address.getAddress().toString());
 			connectData.put("port", address.getPort());
-			log(address.getAddress().toString());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 		send(connectData);
+	}
+	
+	public void sendDisconnect() {
+		JSONObject disconnectData = null;
+		try {
+			disconnectData = new JSONObject();
+			disconnectData.put("type", "disconnect");
+			disconnectData.put("address", address.getAddress().toString());
+			disconnectData.put("port", address.getPort());
+		} catch (JSONException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
+		}
+		send(disconnectData);
 	}
 	
 	public void send(JSONObject json) {

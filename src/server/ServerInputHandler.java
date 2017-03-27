@@ -15,6 +15,7 @@ public class ServerInputHandler extends Thread {
 	private Server server;
 	private ServerSocket socket;
 	Thread runner;
+	private volatile boolean running = true;
 	
 	public ServerInputHandler(Server server) {
 		this.server = server;
@@ -23,17 +24,22 @@ public class ServerInputHandler extends Thread {
 	public void start() {
 		try {
 			socket = new ServerSocket(server.getAddress().getPort());
-			server.log("Server is listening");
+			server.log("Server is listening...");
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 		
+		this.running = true;
 		this.runner = new Thread(this);
 		this.runner.start();
 	}
 	
+	public void terminate() {
+		running = false;
+	}
+	
 	public void run() {
-		while (!Thread.currentThread().isInterrupted()) {
+		while (running) {
 			byte[] readBytes = readBytes();
 			
 			if (readBytes != null) {
@@ -68,27 +74,27 @@ public class ServerInputHandler extends Thread {
 		try {
 			JSONObject json = new JSONObject(result);
 			String type = json.getString("type");
+			
 			String clientAddress = json.getString("address").replace("localhost/", "");
 			int clientPort = Integer.parseInt(json.getString("port"));
 			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
+			
 			switch (type) {
 				case "connect":
-					handleConnectClient(client);
+					server.addClient(client);
+					break;
+				case "disconnect":
+					server.log("DISCONNECTING CLIENT");
+					server.removeClient(client);
 					break;
 				case "report":
-					handleClientReport(client, json);
-					break;				
+					server.log("Client reporting not implemented...");
+					break;
+				default:
+					server.log(Level.SEVERE, "ERROR: server doesn't recognize this input type: " + type, null);
 			}
 		} catch (JSONException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
-	}
-
-	private void handleConnectClient(InetSocketAddress client) {
-		server.addClient(client);
-	}
-
-	private void handleClientReport(InetSocketAddress client, JSONObject json) {
-		server.log("Client reporting not implemented...");
 	}
 }

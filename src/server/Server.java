@@ -97,6 +97,7 @@ public class Server extends Observable implements Runnable {
 	
 	public synchronized void removeClient (InetSocketAddress client) {
 		if (clientExists(client)) {
+			log("Removing client: " + client.getHostName() + " on port: " + client.getPort());
 			clients.remove(getClient(client));
 			update();
 		}		

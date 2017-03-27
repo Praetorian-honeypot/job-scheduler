@@ -57,7 +57,12 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		btnDisconnectFromServer.setBounds(0, 166, 215, 23);
 		btnDisconnectFromServer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				client.disconnect();
+				try {
+					client.disconnect();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		panel.setLayout(null);

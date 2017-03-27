@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,6 +13,7 @@ public class ClientInputHandler extends Thread {
 	private Client client;
 	private ServerSocket socket;
 	Thread runner;
+	private volatile boolean running = true;
 	
 	public ClientInputHandler(Client client) {
 		this.client = client;
@@ -27,12 +27,17 @@ public class ClientInputHandler extends Thread {
 			client.log( Level.SEVERE, exception.toString(), exception );
 		}
 		
+		this.running = true;
 		this.runner = new Thread(this);
 		this.runner.start();
 	}
 	
+	public void terminate() {
+		running = false;
+	}
+	
 	public void run() {
-		while (!Thread.currentThread().isInterrupted()) {
+		while (running) {
 			byte[] readBytes = readBytes();
 			
 			if (readBytes != null) {
