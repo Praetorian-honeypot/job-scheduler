@@ -18,6 +18,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -121,8 +129,8 @@ public class Client extends Observable implements Runnable {
 			reportData = new JSONObject();
 			OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
 			reportData.put("type", "report");
-			reportData.put("cpu", os.getSystemLoadAverage());
-			logger.log(Level.FINE, String.valueOf(os.getSystemLoadAverage()));
+			reportData.put("cpu", getSystemCpuLoad());
+			logger.log(Level.FINE, String.valueOf(getSystemCpuLoad()));
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
@@ -174,6 +182,38 @@ public class Client extends Observable implements Runnable {
 		} catch (IOException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+	
+	public static double getSystemCpuLoad() {
+	    MBeanServer platformBeanServer = ManagementFactory.getPlatformMBeanServer();
+	    ObjectName beanName;
+	    AttributeList attrList;
+		try {
+			beanName = ObjectName.getInstance("java.lang:type=OperatingSystem");
+			attrList = platformBeanServer.getAttributes(beanName, new String[]{"SystemCpuLoad"});
+		} catch (MalformedObjectNameException | 
+				NullPointerException | 
+				InstanceNotFoundException | 
+				ReflectionException e) {
+			logger.log( Level.SEVERE, e.toString(), e );
+			return Double.NaN;
+		}
+	    
+	    
+	    if (attrList.isEmpty()){
+	    	return Double.NaN;
+	    }
+
+	    Attribute attr = (Attribute)attrList.get(0);
+	    Double value  = (Double)attr.getValue();
+
+	    if (value == -1.0){
+	    	//Strange quirk: the call returns -1.0 when the JVM has not been running for long enough
+	    	//It usually starts reporting proper values after half a second.
+	    	return Double.NaN;
+	    }
+	    
+	    return value;
 	}
 	
 }
