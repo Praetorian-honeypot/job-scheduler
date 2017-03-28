@@ -15,6 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.text.DefaultCaret;
 
 public class ServerView extends javax.swing.JFrame implements Observer {
 	private static final long serialVersionUID = -5346255320116138428L;
@@ -69,6 +70,9 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		);
 		
 		clientsField = new JTextPane();
+		DefaultCaret caret = (DefaultCaret) clientsField.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+		
 		scrollPane_1.setViewportView(clientsField);
 		panel_2.setLayout(gl_panel_2);
 		
@@ -95,11 +99,6 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		lblAddress.setBounds(10, 46, 195, 32);
 		panel.add(lblAddress);
 		lblAddress.setFont(new Font("Tahoma", Font.BOLD, 11));
-		
-		JLabel lblServer = new JLabel("Server:");
-		lblServer.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblServer.setBounds(10, 78, 195, 32);
-		panel.add(lblServer);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(221, 5, 458, 452);
@@ -130,6 +129,9 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		);
 		
 		messageField = new JTextPane();
+		DefaultCaret caret2 = (DefaultCaret) messageField.getCaret();
+		caret2.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+		
 		scrollPane.setViewportView(messageField);
 		panel_1.setLayout(gl_panel_1);
     }// </editor-fold>//GEN-END:initComponents
@@ -147,6 +149,7 @@ public class ServerView extends javax.swing.JFrame implements Observer {
     public void update(Observable ob, Object o) {
     	lblAddress.setText("Adress: " + server.getAddress());
         lblPort.setText("port: " + server.getAddress().getPort());
+        lblClients.setText("Clients(" + server.getClients().size() + "):");
 
         setTitle(server.getAddress().toString());
 

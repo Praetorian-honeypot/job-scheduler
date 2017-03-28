@@ -19,13 +19,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.text.DefaultCaret;
 
 public class ClientView extends javax.swing.JFrame implements Observer {
 	private static final long serialVersionUID = -5346255320116138428L;
 	private JPanel contentPane;
 	private JLabel lblAddress;
 	private JLabel lblPort;
+	private JLabel lblServer;
 	private JTextPane textPane;
+	private JButton btnDisconnectFromServer;
+	private JButton btnAddServer;
 	Client client;
 
     public ClientView(Client client) {
@@ -53,7 +57,7 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		panel.setBounds(5, 5, 217, 452);
 		contentPane.add(panel);
 		
-		JButton btnDisconnectFromServer = new JButton("Disconnect from server");
+		btnDisconnectFromServer = new JButton("Disconnect from server");
 		btnDisconnectFromServer.setBounds(0, 166, 215, 23);
 		btnDisconnectFromServer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -63,7 +67,7 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		panel.setLayout(null);
 		panel.add(btnDisconnectFromServer);
 		
-		JButton btnAddServer = new JButton("Connect to server");
+		btnAddServer = new JButton("Connect to server");
 		btnAddServer.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent arg0) {
@@ -92,7 +96,7 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		panel.add(lblAddress);
 		lblAddress.setFont(new Font("Tahoma", Font.BOLD, 11));
 		
-		JLabel lblServer = new JLabel("Server:");
+		lblServer = new JLabel("Server:");
 		lblServer.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblServer.setBounds(10, 78, 195, 32);
 		panel.add(lblServer);
@@ -126,16 +130,27 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		);
 		
 		textPane = new JTextPane();
+		DefaultCaret caret = (DefaultCaret) textPane.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+		
 		scrollPane.setViewportView(textPane);
 		panel_1.setLayout(gl_panel_1);
     }
 
 
     public void update(Observable ob, Object o) {
-        lblAddress.setText("adress: " + client.getAddress());
-        lblPort.setText("port: " + client.getAddress().getPort());
+        lblAddress.setText("Adress: " + client.getAddress());
+        lblPort.setText("Port: " + client.getAddress().getPort());
+        
+        if (client.isConnected())
+        	lblServer.setText("Server: " + client.getServerAddress().getAddress() + ":" + client.getServerAddress().getPort());
+        else
+        	lblServer.setText("Server: none");
 
         setTitle(client.getAddress().toString());
 		textPane.setText(client.getLoggerText());
+		
+		btnDisconnectFromServer.setEnabled(client.isActive());
+		btnAddServer.setEnabled(!client.isActive());
     }
 }

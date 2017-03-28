@@ -4,7 +4,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.DateFormat;
@@ -33,7 +32,7 @@ public class Client extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Client.class.getName() );
 	protected InetSocketAddress address;
 	protected InetSocketAddress serverAddress;
-	private ClientInputHandler clientInputHandler;
+	private ClientInputHandler clientInputHandler = null;
 	private Socket serverSocket = null;
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -74,10 +73,9 @@ public class Client extends Observable implements Runnable {
 	
 	@Override
 	public void run() {
+		logger.log(Level.FINE, "Client is initiated");
 		this.setChanged();
 		this.notifyObservers();
-		
-		logger.log(Level.FINE, "Client is initiated");
 		
 		clientInputHandler = new ClientInputHandler(this);
 		clientInputHandler.start();
@@ -110,45 +108,70 @@ public class Client extends Observable implements Runnable {
 	
 	public void connect(InetSocketAddress server) {
 		try {
-			serverSocket = new Socket(server.getAddress(), server.getPort());
-			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
 			serverAddress = server;
-			sendConnect();
+			log("Connecting to server at address: "+server.getAddress());
+			if (serverSocket == null)
+				serverSocket = new Socket(server.getAddress(), server.getPort());
+			
+			if (clientInputHandler.isSuspended())
+				clientInputHandler.resume();
+			
+			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
+			sendCommand("connect");
 		} catch (IOException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
 
 	public void disconnect() {
-		logger.log(Level.FINE, "Client is disconnecting...");
+		if (!isConnected()) {
+			log("Already disconnected from server!");
+			return;
+		}
+		
+		sendCommand("disconnect");
+		clientInputHandler.suspend();
+		//serverSocket = null;
+		log("Client succesfully disconnected from server.");
+	}
+
+	public boolean isConnected() {
+		return serverSocket != null && !serverSocket.isClosed();
+	}
+	
+	public boolean isActive() {
+		return clientInputHandler != null && !clientInputHandler.isSuspended() && isConnected();
 	}
 
 	public void sendReport() {
-		JSONObject reportData = null;
+		JSONObject reportData = getCommand("report");
 		try {
-			reportData = new JSONObject();
-			OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
 			reportData.put("type", "report");
 			reportData.put("cpu", getSystemCpuLoad());
 			logger.log(Level.FINE, String.valueOf(getSystemCpuLoad()));
+			reportData.put("cpu", getSystemCpuLoad());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 		send(reportData);
 	}
 	
-	public void sendConnect() {
-		JSONObject connectData = null;
+	public void sendCommand(String type) {
+		send(getCommand(type));
+	}
+	
+	public JSONObject getCommand(String type) {
+		JSONObject command = null;
 		try {
-			connectData = new JSONObject();
-			connectData.put("type", "connect");
-			connectData.put("address", address.getAddress().toString());
-			connectData.put("port", address.getPort());
-			log(address.getAddress().toString());
+			command = new JSONObject();
+			command.put("type", type);
+			command.put("address", address.getAddress().toString());
+			command.put("port", address.getPort());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
-		send(connectData);
+		
+		return command;
 	}
 	
 	public void send(JSONObject json) {
@@ -160,7 +183,7 @@ public class Client extends Observable implements Runnable {
 	}
 	
 	public void send(byte[] sendData, int start, int len) {
-		if (serverSocket == null) {
+		if (!isConnected()) {
 			logger.log(Level.SEVERE, "No connection has been established with the server");
 			return;
 		}
@@ -178,10 +201,17 @@ public class Client extends Observable implements Runnable {
 			
 			if (len > 0) {
 				dos.write(sendData, start, len);
+				log("Writing " + len + " bytes to the server.");
 			}
+			dos.flush();
+			out.flush();
 		} catch (IOException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+
+	public InetSocketAddress getServerAddress() {
+		return serverAddress;
 	}
 	
 	public static double getSystemCpuLoad() {
