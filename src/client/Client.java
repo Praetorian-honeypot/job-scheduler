@@ -17,6 +17,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import oshi.SystemInfo;
+import oshi.hardware.HardwareAbstractionLayer;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
@@ -145,11 +148,27 @@ public class Client extends Observable implements Runnable {
 
 	public void sendReport() {
 		JSONObject reportData = getCommand("report");
+		SystemInfo sysInfo = new SystemInfo();
+		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
 			reportData.put("type", "report");
-			reportData.put("cpu", getSystemCpuLoad());
-			logger.log(Level.FINE, String.valueOf(getSystemCpuLoad()));
-			reportData.put("cpu", getSystemCpuLoad());
+			
+			double cpuLoad = hw.getProcessor().getSystemLoadAverage();
+			if(cpuLoad == -1.0){
+				//Windows doesn't report load averages, fallback.
+				cpuLoad = hw.getProcessor().getSystemCpuLoad();
+			}
+			reportData.put("cpu", cpuLoad);
+			logger.log(Level.FINE, String.valueOf(cpuLoad));
+			
+			double memAvailable = hw.getMemory().getAvailable();
+			reportData.put("memAvailable", memAvailable);
+			logger.log(Level.FINE, String.valueOf(memAvailable));
+			
+			double cpuTemp = hw.getSensors().getCpuTemperature();
+			reportData.put("memAvailable", cpuTemp);
+			logger.log(Level.FINE, String.valueOf(cpuTemp));
+			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}

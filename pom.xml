@@ -19,6 +19,11 @@
 	    <version>1.16</version>
 	</dependency>
 
+    <dependency>
+    	<groupId>com.github.oshi</groupId>
+    	<artifactId>oshi-core</artifactId>
+    	<version>3.4.2</version>
+    </dependency>
   </dependencies>
   <packaging>war</packaging>
 </project>
