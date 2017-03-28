@@ -88,7 +88,7 @@ public class Server extends Observable implements Runnable {
 
 	public void addClient(InetSocketAddress client) {
 		if (!clientExists(client)) {
-			log("Adding client: " + client.getHostName() + " on port: " + client.getPort());
+			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
 			ClientConnector clientConnector = new ClientConnector(this, client);
 			clients.add(clientConnector);
 			update();
@@ -139,8 +139,10 @@ public class Server extends Observable implements Runnable {
 		if (clients.isEmpty())
 			messageText = "No clients";
         
+		int i = 1;
         for (ClientConnector client : clients) {
-        	messageText += client.getClientAddress().getHostName() + " on port " + client.getClientAddress().getPort() + "\n";
+        	messageText += i + ": " + client.getClientAddress().getHostName() + " (port " + client.getClientAddress().getPort() + ")\n";
+        	i++;
 		}
 		return messageText;
 	}

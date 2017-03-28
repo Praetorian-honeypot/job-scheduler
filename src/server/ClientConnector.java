@@ -3,7 +3,6 @@ package server;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -14,19 +13,16 @@ import org.json.JSONObject;
 public class ClientConnector {
 	private Server server;
 	private InetSocketAddress clientAddress;
-	private Socket clientSocket;
+	private Socket clientSocket = null;
 	
 	public ClientConnector(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
-		
 		try {
-			InetAddress address = InetAddress.getByName(clientAddress.getHostName());
-			clientSocket = new Socket(address, clientAddress.getPort());
+			clientSocket = new Socket(clientAddress.getAddress(), clientAddress.getPort());
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
-		
 	}
 	
 	public void send(JSONObject json) {
@@ -52,6 +48,8 @@ public class ClientConnector {
 			if (len > 0) {
 				dos.write(sendData, start, len);
 			}
+			dos.flush();
+			out.flush();
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
