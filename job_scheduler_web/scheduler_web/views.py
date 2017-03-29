@@ -9,7 +9,7 @@ import csv
 
 from .models import Server, Job, LoadMeasurement
 
-import .rest
+import rest
 
 import requests
 # Create your views here.
