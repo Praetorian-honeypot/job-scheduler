@@ -134,7 +134,7 @@ public class Client extends Observable implements Runnable {
 		
 		sendCommand("disconnect");
 		clientInputHandler.suspend();
-		//serverSocket = null;
+		serverSocket = null;
 		log("Client succesfully disconnected from server.");
 	}
 
