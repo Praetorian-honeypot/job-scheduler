@@ -162,16 +162,13 @@ public class Client extends Observable implements Runnable {
 				//Windows doesn't report load averages, fallback.
 				cpuLoad = hw.getProcessor().getSystemCpuLoad();
 			}
-			reportData.put("cpu", cpuLoad);
-			logger.log(Level.FINE, String.valueOf(cpuLoad));
+			reportData.put("cpuLoad", cpuLoad);
 			
 			double memAvailable = hw.getMemory().getAvailable();
 			reportData.put("memAvailable", memAvailable);
-			logger.log(Level.FINE, String.valueOf(memAvailable));
 			
 			double cpuTemp = hw.getSensors().getCpuTemperature();
-			reportData.put("memAvailable", cpuTemp);
-			logger.log(Level.FINE, String.valueOf(cpuTemp));
+			reportData.put("cpuTemp", cpuTemp);
 			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );

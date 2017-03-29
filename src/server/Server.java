@@ -18,7 +18,7 @@ public class Server extends Observable implements Runnable {
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private InetSocketAddress address;
 	private ServerInputHandler serverInputHandler;
-	private ArrayList<ClientConnector> clients = new ArrayList<ClientConnector>();
+	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	
 	public Server(InetSocketAddress address) {
 		this.address = address;
@@ -50,10 +50,9 @@ public class Server extends Observable implements Runnable {
 	@Override
 	public void run() {
 		update();
-		logger.log(Level.FINE, "Server is initiated");
-		
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
+		logger.log(Level.FINE, "Server is initiated");
 	}
 	
 	public void update() {
@@ -89,8 +88,8 @@ public class Server extends Observable implements Runnable {
 	public void addClient(InetSocketAddress client) {
 		if (!clientExists(client)) {
 			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
-			ClientConnector clientConnector = new ClientConnector(this, client);
-			clients.add(clientConnector);
+			ConnectedClient connectedClient = new ConnectedClient(this, client);
+			clients.add(connectedClient);
 			update();
 		}
 	}
@@ -107,10 +106,10 @@ public class Server extends Observable implements Runnable {
 		return (getClient(client) != null);
 	}
 	
-	public synchronized ClientConnector getClient (InetSocketAddress searchClient) {
-		ClientConnector findClient = null;
+	public synchronized ConnectedClient getClient (InetSocketAddress searchClient) {
+		ConnectedClient findClient = null;
 		
-		for (ClientConnector client : clients) {
+		for (ConnectedClient client : clients) {
 			if (searchClient.equals(client.getClientAddress()))
 				findClient = client;
 		}
@@ -118,17 +117,17 @@ public class Server extends Observable implements Runnable {
 		return findClient;
 	}
 	
-	public ArrayList<ClientConnector> getClients() {
+	public ArrayList<ConnectedClient> getClients() {
 		return clients;
 	}
 
-	public synchronized void requestCPULoad() {
+	public synchronized void requestReport() {
 		if (clients.isEmpty()) {
 			log("Client list is empty");
 			return;
 		}
 		
-		for (ClientConnector client : clients) {
+		for (ConnectedClient client : clients) {
 			client.requestReport();
 		}
 	}
@@ -140,8 +139,18 @@ public class Server extends Observable implements Runnable {
 			messageText = "No clients";
         
 		int i = 1;
-        for (ClientConnector client : clients) {
-        	messageText += i + ": " + client.getClientAddress().getHostName() + " (port " + client.getClientAddress().getPort() + ")\n";
+        for (ConnectedClient client : clients) {
+        	messageText += "(" + i + ") "
+    				+ client.getClientAddress().getHostName() 
+    				+ ":" + client.getClientAddress().getPort();
+        	
+        	ClientReport report = client.getLatestReport();
+        	if (report != null)
+        		messageText += " (CPU:" + Math.round(report.getCpuLoad() * 100) + "%, "
+        				+ " MEM:" + Math.round(report.getMemAvailable() / Math.pow(10,6)) + "MB, "
+        				+ " TEMP:" + Math.round(report.getCpuTemp()) + "°C)";
+        	
+        	messageText += "\n";
         	i++;
 		}
 		return messageText;

@@ -5,17 +5,19 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ClientConnector {
+public class ConnectedClient {
 	private Server server;
 	private InetSocketAddress clientAddress;
 	private Socket clientSocket = null;
+	private ArrayList<ClientReport> reports = new ArrayList<ClientReport>();
 	
-	public ClientConnector(Server server, InetSocketAddress clientAddress) {
+	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
 		try {
@@ -72,5 +74,21 @@ public class ClientConnector {
 
 	public void setClientAddress(InetSocketAddress clientAddress) {
 		this.clientAddress = clientAddress;
+	}
+	
+	public void addReport(ClientReport report) {
+		this.reports.add(report);
+	}
+
+	public ArrayList<ClientReport> getReports() {
+		return reports;
+	}
+
+	public void setReports(ArrayList<ClientReport> reports) {
+		this.reports = reports;
+	}
+	
+	public ClientReport getLatestReport() {
+		return (reports.size() > 0) ? reports.get(reports.size() - 1) : null;
 	}
 }

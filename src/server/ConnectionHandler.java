@@ -86,8 +86,13 @@ public class ConnectionHandler implements Runnable {
 					server.removeClient(client);
 					break;
 				case "report":
-					double cpu = Double.parseDouble(json.getString("cpu"));
-					server.log("Client on " + clientAddress + " reported a CPU usage of: " + cpu);
+					double cpuLoad = Double.parseDouble(json.getString("cpuLoad"));
+					double memAvailable = Double.parseDouble(json.getString("memAvailable"));
+					double cpuTemp = Double.parseDouble(json.getString("cpuTemp"));
+					ClientReport report = new ClientReport(cpuLoad, memAvailable, cpuTemp);
+					ConnectedClient connectedClient = server.getClient(client);
+					connectedClient.addReport(report);
+					server.log("Received report from client on " + clientAddress);
 					break;
 				default:
 					server.log(Level.SEVERE, "ERROR: server doesn't recognize this input type: " + type, null);

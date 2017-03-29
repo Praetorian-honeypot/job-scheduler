@@ -84,7 +84,7 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		btnDisconnectFromServer.setBounds(0, 140, 215, 23);
 		btnDisconnectFromServer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				server.requestCPULoad();
+				server.requestReport();
 			}
 		});
 		panel.setLayout(null);
