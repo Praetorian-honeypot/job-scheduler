@@ -151,6 +151,6 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		textPane.setText(client.getLoggerText());
 		
 		btnDisconnectFromServer.setEnabled(client.isActive());
-		btnAddServer.setEnabled(!client.isActive());
+		btnAddServer.setEnabled(!client.isActive() && client.isListening());
     }
 }

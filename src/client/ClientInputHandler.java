@@ -3,6 +3,7 @@ package client;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -28,13 +29,16 @@ public class ClientInputHandler implements Runnable {
 		try {
 			socket = new ServerSocket(client.getAddress().getPort());
 			client.log("Client is listening on: " + client.getAddress().getAddress() + ":" + client.getAddress().getPort());
+			this.running = true;
+			this.runner = new Thread(this);
+			this.runner.start();
 		} catch (IOException exception) {
-			client.log( Level.SEVERE, exception.toString(), exception );
+			running = false;
+			if (exception instanceof BindException)
+				client.log("This address is already in use, aborting...");
+			else
+				client.log( Level.SEVERE, exception.toString(), exception );
 		}
-		
-		this.running = true;
-		this.runner = new Thread(this);
-		this.runner.start();
 	}
 	
 	public void suspend() {

@@ -145,6 +145,10 @@ public class Client extends Observable implements Runnable {
 	public boolean isActive() {
 		return clientInputHandler != null && !clientInputHandler.isSuspended() && isConnected();
 	}
+	
+	public boolean isListening() {
+		return clientInputHandler != null && !clientInputHandler.isTerminated();
+	}
 
 	public void sendReport() {
 		JSONObject reportData = getCommand("report");
