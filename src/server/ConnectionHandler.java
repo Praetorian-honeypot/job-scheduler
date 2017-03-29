@@ -30,7 +30,8 @@ public class ConnectionHandler implements Runnable {
 			dis = new DataInputStream(in);
 			
 			while (running) {
-				byte[] readBytes = readBytes();
+				int size = dis.readInt();
+				byte[] readBytes = readBytes(size);
 				
 				if (readBytes != null) {
 					String result = new String(readBytes);
@@ -49,17 +50,11 @@ public class ConnectionHandler implements Runnable {
 		}
 	}
 	
-	public byte[] readBytes() {
-		byte[] data = null;
+	public byte[] readBytes(int size) {
+		byte[] data = new byte[size];
 		try {
-			if (dis.available() > 0) {
-				int len = dis.readInt();
-			    data = new byte[len];
-			    if (len > 0) {
-			        dis.readFully(data);
-			        server.log("Received " + len + " bytes.");
-			    }
-			}
+	        dis.readFully(data);
+			server.log("Received " + size + " bytes.");
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
