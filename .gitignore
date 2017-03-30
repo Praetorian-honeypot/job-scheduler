@@ -1,5 +1,6 @@
 /bin/
 /target/
+*.db
 # Django Recommended
 *.egg-info
 *.pot

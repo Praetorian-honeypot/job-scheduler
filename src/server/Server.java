@@ -11,6 +11,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import database.SQLite;
 
 public class Server extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Server.class.getName() );
@@ -19,6 +20,7 @@ public class Server extends Observable implements Runnable {
 	private InetSocketAddress address;
 	private ServerInputHandler serverInputHandler;
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
+	private SQLite database;
 	
 	public Server(InetSocketAddress address) {
 		this.address = address;
@@ -52,6 +54,7 @@ public class Server extends Observable implements Runnable {
 		update();
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
+		this.database = new SQLite(this);
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
@@ -97,7 +100,8 @@ public class Server extends Observable implements Runnable {
 	public synchronized void removeClient (InetSocketAddress client) {
 		if (clientExists(client)) {
 			log("Removing client: " + client.getHostName() + " on port: " + client.getPort());
-			clients.remove(getClient(client));
+			ConnectedClient removeClient = getClient(client);
+			clients.remove(removeClient);
 			update();
 		}		
 	}
