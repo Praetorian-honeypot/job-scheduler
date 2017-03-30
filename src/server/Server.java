@@ -60,14 +60,6 @@ public class Server extends Observable implements Runnable {
 		serverInputHandler.start();
 		this.setDatabase(new SQLite(this));
 		RestAPI rest = new RestAPI(this, BASE_URI);
-        try {
-			System.in.read();
-			rest.stopServer();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
