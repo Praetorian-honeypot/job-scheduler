@@ -1,5 +1,6 @@
 package server;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -11,6 +12,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
+import api.RestAPI;
 import database.SQLite;
 
 public class Server extends Observable implements Runnable {
@@ -21,6 +24,7 @@ public class Server extends Observable implements Runnable {
 	private ServerInputHandler serverInputHandler;
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	private SQLite database;
+	public static final String BASE_URI = "http://localhost:8080/api/";
 	
 	public Server(InetSocketAddress address) {
 		this.address = address;
@@ -55,6 +59,15 @@ public class Server extends Observable implements Runnable {
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
 		this.setDatabase(new SQLite(this));
+		RestAPI rest = new RestAPI(this, BASE_URI);
+        try {
+			System.in.read();
+			rest.stopServer();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
@@ -158,7 +171,7 @@ public class Server extends Observable implements Runnable {
         	if (report != null)
         		messageText += " (CPU:" + Math.round(report.getCpuLoad() * 100) + "%, "
         				+ " MEM:" + Math.round(report.getMemAvailable() / Math.pow(10,6)) + "MB, "
-        				+ " TEMP:" + Math.round(report.getCpuTemp()) + "°C)";
+        				+ " TEMP:" + Math.round(report.getCpuTemp()) + "ï¿½C)";
         	
         	messageText += "\n";
         	i++;

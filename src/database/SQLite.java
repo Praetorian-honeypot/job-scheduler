@@ -17,6 +17,27 @@ import server.Server;
 public class SQLite {
 	private Server server;
 	private Connection c = null;
+	
+	public SQLite() {
+		try {
+			Class.forName("org.sqlite.JDBC");
+			c = DriverManager.getConnection("jdbc:sqlite:server.db");
+			
+			if (!tableExists("clients"))
+				createClientsTable();
+			if (!tableExists("clientReports"))
+				createClientReportsTable();
+			if (!tableExists("clientGroups"))
+				createClientGroupsTable();
+			if (!tableExists("jobs"))
+				createJobsTable();
+			if (!tableExists("jobSchedulingEvents"))
+				createJobSchedulingEventsTable();
+			
+		} catch (Exception exception) {
+			System.out.println(exception.toString());
+		}
+	}
 
 	public SQLite(Server server) {
 		this.server = server;

@@ -1,4 +1,4 @@
-package api.apicalls;
+package api;
  
 /**
  * @author Crunchify
