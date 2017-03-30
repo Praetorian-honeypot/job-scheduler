@@ -97,7 +97,7 @@ public class SQLite {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
 			String sql = "INSERT INTO clients (address, hostname, port, createDate) " +
-						 "VALUES ("+client.getAddress()+", "+client.getHostName()+", "+client.getPort()+", "+time+");";
+						 "VALUES ('"+client.getAddress()+"', '"+client.getHostName()+"', "+client.getPort()+", "+time+");";
 			stmt.executeUpdate(sql);
 			server.log("Succesfully added client");
 		} catch (Exception exception) {
@@ -162,7 +162,7 @@ public class SQLite {
 	                   " hostname       TEXT NOT NULL, " + 
 	                   " port           INTEGER NOT NULL, " + 
 	                   " clientGroup    INTEGER, " + 
-	                   " cpuName        TEXT NOT NULL, " + 
+	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
 	                   " createDate     INTEGER)"; 
 			stmt.executeUpdate(sql);

@@ -1,9 +1,6 @@
 package server;
 
 import java.net.InetSocketAddress;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ClientReport {
@@ -12,7 +9,6 @@ public class ClientReport {
 	private double memAvailable;
 	private double cpuTemp;
 	private Date createDate;
-	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
 	public ClientReport(InetSocketAddress clientAddress, double cpuLoad, double memAvailable, double cpuTemp) {
 		this.clientAddress = clientAddress;
@@ -22,16 +18,12 @@ public class ClientReport {
 		this.createDate = new Date();
 	}
 	
-	public ClientReport(InetSocketAddress clientAddress, double cpuLoad, double memAvailable, double cpuTemp, Integer date) {
+	public ClientReport(InetSocketAddress clientAddress, double cpuLoad, double memAvailable, double cpuTemp, int date) {
 		this.clientAddress = clientAddress;
 		this.cpuLoad = cpuLoad;
 		this.memAvailable = memAvailable;
 		this.cpuTemp = cpuTemp;
-		try {
-			this.createDate = sdf.parse(date.toString());
-		} catch (ParseException exception) {
-			exception.printStackTrace();
-		}
+		this.createDate = new Date(date * 1000L);
 	}
 	
 	public double getCpuLoad() {
