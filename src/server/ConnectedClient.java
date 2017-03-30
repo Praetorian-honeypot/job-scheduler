@@ -20,6 +20,8 @@ public class ConnectedClient {
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
+		findExistingClientRecords();
+			
 		try {
 			clientSocket = new Socket(clientAddress.getAddress(), clientAddress.getPort());
 		} catch (IOException exception) {
@@ -27,6 +29,13 @@ public class ConnectedClient {
 		}
 	}
 	
+	private void findExistingClientRecords() {
+		int client;
+		if ((client = server.getDatabase().findClient(clientAddress)) != 0) {
+			reports.addAll(server.getDatabase().getClientReports(client, clientAddress));
+		}
+	}
+
 	public void send(JSONObject json) {
 		send(json.toString().getBytes());
 	}
@@ -78,6 +87,7 @@ public class ConnectedClient {
 	
 	public void addReport(ClientReport report) {
 		this.reports.add(report);
+		server.getDatabase().addReport(report);
 	}
 
 	public ArrayList<ClientReport> getReports() {

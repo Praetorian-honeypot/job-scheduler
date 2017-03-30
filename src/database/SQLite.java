@@ -1,41 +1,124 @@
 package database;
 
+import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.logging.Level;
 
+import server.ClientReport;
 import server.Server;
 
 public class SQLite {
 	private Server server;
+	private Connection c = null;
 
 	public SQLite(Server server) {
 		this.server = server;
-		Connection c = null;
 		try {
 			Class.forName("org.sqlite.JDBC");
 			c = DriverManager.getConnection("jdbc:sqlite:server.db");
 			server.log("Opened database succesfully");
 			
-			if (!tableExists(c, "clients"))
-				createClientsTable(c);
-			if (!tableExists(c, "clientReports"))
-				createClientReportsTable(c);
-			if (!tableExists(c, "clientGroups"))
-				createClientGroupsTable(c);
-			if (!tableExists(c, "jobs"))
-				createJobsTable(c);
-			if (!tableExists(c, "jobSchedulingEvents"))
-				createJobSchedulingEventsTable(c);
+			if (!tableExists("clients"))
+				createClientsTable();
+			if (!tableExists("clientReports"))
+				createClientReportsTable();
+			if (!tableExists("clientGroups"))
+				createClientGroupsTable();
+			if (!tableExists("jobs"))
+				createJobsTable();
+			if (!tableExists("jobSchedulingEvents"))
+				createJobSchedulingEventsTable();
 			
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
+	
+	public int findSingle(String table, String whereStatement) {
+		int id = 0;
+		try {
+			Statement stmt = c.createStatement();
+			String sql = "SELECT * FROM " + table + " WHERE " + whereStatement;
+			ResultSet found = stmt.executeQuery(sql);
+			if (found.next())
+				id = found.getInt("id");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return id;
+	}
 
-	private boolean tableExists(Connection c, String table) {
+	public ResultSet find(String table, String whereStatement) {
+		ResultSet found = null;
+		try {
+			Statement stmt = c.createStatement();
+			String sql = "SELECT * FROM " + table + " WHERE " + whereStatement;
+			found = stmt.executeQuery(sql);
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return found;
+	}
+	
+	public int findClient(InetSocketAddress client) {
+		return findSingle("clients", "address = '" + client.getAddress() + "' AND port = " + client.getPort());
+	}
+	
+	public void addClient(InetSocketAddress client) {
+		try {
+			Statement stmt = c.createStatement();
+			int time = (int) (new Date().getTime() / 1000);
+			String sql = "INSERT INTO clients (address, hostname, port, createDate) " +
+						 "VALUES ("+client.getAddress()+", "+client.getHostName()+", "+client.getPort()+", "+time+");";
+			stmt.executeUpdate(sql);
+			server.log("Succesfully added client");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
+	public Collection<? extends ClientReport> getClientReports(int clientId, InetSocketAddress clientAddress) {
+		ArrayList<ClientReport> clientReports = new ArrayList<ClientReport>();
+		
+		try {
+			ResultSet dbClientReports = find("clientReports", "client = " + clientId);
+			while (dbClientReports.next()) {
+				double cpuLoad = dbClientReports.getDouble("cpuLoad");
+				double memAvailable = dbClientReports.getDouble("memAvailable");
+				double cpuTemp = dbClientReports.getDouble("cpuTemp");
+				int createDate = dbClientReports.getInt("date");
+				ClientReport clientReport = new ClientReport(clientAddress, cpuLoad, memAvailable, cpuTemp, createDate);
+				clientReports.add(clientReport);
+			}
+		} catch (SQLException exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
+		return clientReports;
+	}
+	
+	public void addReport(ClientReport report) {
+		int clientId = findClient(report.getClientAddress());
+		try {
+			Statement stmt = c.createStatement();
+			int time = (int) (report.getCreateDate().getTime() / 1000);
+			String sql = "INSERT INTO clientReports (client,date,cpuLoad,memAvailable,cpuTemp) " +
+						 "VALUES ("+clientId+", "+time+", "+report.getCpuLoad()+", "+report.getMemAvailable()+", "+report.getCpuTemp()+");";
+			stmt.executeUpdate(sql);
+			server.log("Succesfully saved client report");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+
+	private boolean tableExists(String table) {
 		boolean tableExists = false;
 		try {
 			Statement stmt = c.createStatement();
@@ -49,7 +132,7 @@ public class SQLite {
 		return tableExists;
 	}
 
-	private void createClientsTable(Connection c) {
+	private void createClientsTable() {
 		try {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE clients " +
@@ -69,7 +152,7 @@ public class SQLite {
 		}
 	}
 	
-	private void createClientReportsTable(Connection c) {
+	private void createClientReportsTable() {
 		try {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE clientReports " +
@@ -87,7 +170,7 @@ public class SQLite {
 		}
 	}
 	
-	private void createClientGroupsTable(Connection c) {
+	private void createClientGroupsTable() {
 		try {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE clientGroups " +
@@ -102,7 +185,7 @@ public class SQLite {
 		}
 	}
 	
-	private void createJobsTable(Connection c) {
+	private void createJobsTable() {
 		try {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE jobs " +
@@ -118,7 +201,7 @@ public class SQLite {
 		}
 	}
 	
-	private void createJobSchedulingEventsTable(Connection c) {
+	private void createJobSchedulingEventsTable() {
 		try {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE jobSchedulingEvents " +

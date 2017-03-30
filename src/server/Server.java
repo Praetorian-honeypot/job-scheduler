@@ -54,7 +54,7 @@ public class Server extends Observable implements Runnable {
 		update();
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
-		this.database = new SQLite(this);
+		this.setDatabase(new SQLite(this));
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
@@ -91,7 +91,13 @@ public class Server extends Observable implements Runnable {
 	public void addClient(InetSocketAddress client) {
 		if (!clientExists(client)) {
 			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
+			
+			int clientId = database.findClient(client);
+			if (clientId == 0)
+				database.addClient(client);
+			
 			ConnectedClient connectedClient = new ConnectedClient(this, client);
+			
 			clients.add(connectedClient);
 			update();
 		}
@@ -158,6 +164,14 @@ public class Server extends Observable implements Runnable {
         	i++;
 		}
 		return messageText;
+	}
+
+	public SQLite getDatabase() {
+		return database;
+	}
+
+	public void setDatabase(SQLite database) {
+		this.database = database;
 	}
 	
 }
