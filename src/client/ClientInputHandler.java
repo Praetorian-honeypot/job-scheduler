@@ -6,10 +6,15 @@ import java.io.InputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
 public class ClientInputHandler implements Runnable {
 	private Client client;
@@ -20,6 +25,9 @@ public class ClientInputHandler implements Runnable {
 	private Socket serverSocket;
 	private InputStream in;
 	private DataInputStream dis;
+	private Channel channel;
+	private boolean queueConnected= false;
+	public static final String BROKER = "asa"; //TODO: Store broker setup in configuration file
 	
 	public ClientInputHandler(Client client) {
 		this.client = client;
@@ -67,6 +75,17 @@ public class ClientInputHandler implements Runnable {
 			in = serverSocket.getInputStream();
 			dis = new DataInputStream(in);
 			
+			ConnectionFactory factory = new ConnectionFactory();
+		    factory.setHost(BROKER);
+			Connection connection = factory.newConnection();
+			channel = connection.createChannel();
+			channel.exchangeDeclare("reports", "direct");
+			
+			channel.queueDeclare("server",false,false,false,null);
+			
+			queueConnected = true;
+			client.log("Connected to MQ broker.");
+			
 			while (running) {
 				int size = dis.readInt();
 				byte[] readBytes = readBytes(size);
@@ -82,7 +101,7 @@ public class ClientInputHandler implements Runnable {
 	               }
 	            }
 			}
-		} catch (IOException | InterruptedException exception) {
+		} catch (IOException | InterruptedException | TimeoutException exception) {
 			client.log(Level.SEVERE, exception.toString(), exception);
 		} finally {
 			try {
@@ -114,6 +133,7 @@ public class ClientInputHandler implements Runnable {
 			
 			switch (type) {
 				case "report":
+					client.log("Server requests report");
 					client.sendReport();
 					break;				
 			}
@@ -128,5 +148,9 @@ public class ClientInputHandler implements Runnable {
 
 	public void setSocket(ServerSocket socket) {
 		this.socket = socket;
+	}
+	
+	public Channel getChannel(){
+		return channel;
 	}
 }

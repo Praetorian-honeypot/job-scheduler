@@ -170,10 +170,14 @@ public class Client extends Observable implements Runnable {
 			double cpuTemp = hw.getSensors().getCpuTemperature();
 			reportData.put("cpuTemp", cpuTemp);
 			
+			String message = reportData.toString();
+			clientInputHandler.getChannel().basicPublish("reports","report", null, message.getBytes());
+			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
+		} catch (IOException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
-		send(reportData);
 	}
 	
 	public void sendCommand(String type) {
