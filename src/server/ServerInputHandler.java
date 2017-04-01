@@ -1,12 +1,14 @@
 package server;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -35,7 +37,7 @@ public class ServerInputHandler implements Runnable {
 		try {
 			Connection connection = factory.newConnection();
 			channel = connection.createChannel();
-			channel.queueDeclare("serverIn",false,false,false,null);
+			channel.queueDeclare("serverIn", false, false, false, null);
 			channel.exchangeDeclare("server", "direct");
 			
 			channel.queueBind("serverIn","server","report");
@@ -44,29 +46,14 @@ public class ServerInputHandler implements Runnable {
 		    	@Override
 		    	public void handleDelivery(String consumerTag, Envelope envelope,
 		    			AMQP.BasicProperties properties, byte[] body) throws IOException {
-		    		//String message = new String(body, "UTF-8");
-		    		//System.out.println(" [x] Received '" + envelope.getRoutingKey() + "':'" + message + "'");
 		    		
-		    		if(envelope.getRoutingKey().equals("report")){
-		    			try {
-		    				String message = new String(body, "UTF-8");
-							server.handleReport(message);
-						} catch (JSONException exception) {
-							server.log(Level.SEVERE, exception.toString(), exception);
-						}
-		    		} else if(envelope.getRoutingKey().equals("spec")){
-		    			try {
-		    				String message = new String(body, "UTF-8");
-							server.handleHardwareSpec(message);
-						} catch (JSONException exception) {
-							server.log(Level.SEVERE, exception.toString(), exception);
-						}
-		    		}
+		    		@SuppressWarnings("unused")
+					String routingKey = envelope.getRoutingKey();
+	    			String message = new String(body, "UTF-8");
+		    		handleMessageQueueInput(message);
 		    	}
 		    };
 		    server.log("Connected to MQ broker.");
-		    
-		    
 		} catch (IOException | TimeoutException exception) {
 			server.log(Level.SEVERE, exception.toString(), exception);
 		}
@@ -110,12 +97,52 @@ public class ServerInputHandler implements Runnable {
 		}
 	}
 	
+	public void handleMessageQueueInput (String result) {
+		try {
+			JSONObject json = new JSONObject(result);
+			String type = json.getString("type");
+			
+			String clientAddress = json.getString("address").trim();
+			if (clientAddress.equals("localhost/127.0.0.1"))
+				clientAddress = "localhost";
+			int clientPort = Integer.parseInt(json.getString("port"));
+			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
+			
+			ConnectedClient connectedClient = server.getClient(client);
+			switch (type) {
+				case "report":
+					double cpuLoad = Double.parseDouble(json.getString("cpuLoad"));
+					double memAvailable = Double.parseDouble(json.getString("memAvailable"));
+					double cpuTemp = Double.parseDouble(json.getString("cpuTemp"));
+					ClientReport report = new ClientReport(connectedClient.getClientAddress(), cpuLoad, memAvailable, cpuTemp);
+					connectedClient.addReport(report);
+					server.log("Received report from client on " + clientAddress);
+					break;
+				case "spec":
+					String cpuName = json.getString("cpuName");
+					int cpuCores = Integer.parseInt(json.getString("cpuCores"));
+					String operatingSystem = json.getString("operatingSystem");
+					int totalMemory = Integer.parseInt(json.getString("totalMemory"));
+					String hostname = json.getString("hostname");
+					int performance = json.getInt("performance");
+					
+					//TODO: store in DB or something.
+					server.log("Received hardware specifications from client on " + clientAddress);
+					break;
+				default:
+					server.log(Level.SEVERE, "ERROR: ServerInputHandler doesn't recognizes this type of input for the message queue: " + type, null);
+			}
+		} catch (JSONException exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
 	public void run() {
 		try {
 			while (running) {
 				Socket clientSocket = socket.accept();
-				Runnable connectionHandler = new ConnectionHandler(clientSocket, server);
-				new Thread(connectionHandler).start();
+				Runnable socketConnectionHandler = new SocketConnectionHandler(clientSocket, server);
+				new Thread(socketConnectionHandler).start();
 			}
 		} catch (IOException exception) {
 			server.log(Level.SEVERE, exception.toString(), exception);
