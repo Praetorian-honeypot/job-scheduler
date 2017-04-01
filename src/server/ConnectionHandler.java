@@ -75,7 +75,13 @@ public class ConnectionHandler implements Runnable {
 			
 			switch (type) {
 				case "connect":
-					server.addClient(client);
+					String cpuName = json.getString("cpuName");
+					int cpuCores = Integer.parseInt(json.getString("cpuCores"));
+					int memory = Integer.parseInt(json.getString("totalMemory"));
+					String os = json.getString("operatingSystem");
+					String hostname = json.getString("ownHostname");
+					
+					server.addClient(client, cpuName, cpuCores, os, memory, hostname);
 					break;
 				case "disconnect":
 					server.removeClient(client);

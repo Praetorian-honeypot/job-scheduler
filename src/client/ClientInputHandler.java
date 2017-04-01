@@ -25,9 +25,6 @@ public class ClientInputHandler implements Runnable {
 	private Socket serverSocket;
 	private InputStream in;
 	private DataInputStream dis;
-	private Channel channel;
-	private boolean queueConnected= false;
-	public static final String BROKER = "renebrals.nl";
 	
 	public ClientInputHandler(Client client) {
 		this.client = client;
@@ -75,17 +72,6 @@ public class ClientInputHandler implements Runnable {
 			in = serverSocket.getInputStream();
 			dis = new DataInputStream(in);
 			
-			ConnectionFactory factory = new ConnectionFactory();
-		    factory.setHost(BROKER);
-			Connection connection = factory.newConnection();
-			channel = connection.createChannel();
-			channel.exchangeDeclare("server", "direct");
-			
-			channel.queueDeclare("serverIn",false,false,false,null);
-			
-			queueConnected = true;
-			client.log("Connected to MQ broker.");
-			
 			while (running) {
 				int size = dis.readInt();
 				byte[] readBytes = readBytes(size);
@@ -101,7 +87,7 @@ public class ClientInputHandler implements Runnable {
 	               }
 	            }
 			}
-		} catch (IOException | InterruptedException | TimeoutException exception) {
+		} catch (IOException | InterruptedException exception) {
 			client.log(Level.SEVERE, exception.toString(), exception);
 		} finally {
 			try {
@@ -151,9 +137,5 @@ public class ClientInputHandler implements Runnable {
 
 	public void setSocket(ServerSocket socket) {
 		this.socket = socket;
-	}
-	
-	public Channel getChannel(){
-		return channel;
 	}
 }
