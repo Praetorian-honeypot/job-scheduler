@@ -79,7 +79,7 @@ public class ConnectionHandler implements Runnable {
 					int cpuCores = Integer.parseInt(json.getString("cpuCores"));
 					int memory = Integer.parseInt(json.getString("totalMemory"));
 					String os = json.getString("operatingSystem");
-					String hostname = json.getString("ownHostname");
+					String hostname = json.getString("hostname");
 					int performance = Integer.parseInt(json.getString("performance"));
 					
 					server.addClient(client, cpuName, cpuCores, os, memory, hostname, performance);
