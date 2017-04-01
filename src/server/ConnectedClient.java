@@ -22,10 +22,30 @@ public class ConnectedClient {
 	private int totalMemory;
 	private String operatingSystem;
 	private String hostname;	
+	private int performance;
 	
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
+		findExistingClientRecords();
+			
+		try {
+			clientSocket = new Socket(clientAddress.getAddress(), clientAddress.getPort());
+		} catch (IOException exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
+	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance) {
+		this.server = server;
+		this.setClientAddress(clientAddress);
+		this.cpuName = cpuName;
+		this.cpuCores = cpuCores;
+		this.operatingSystem = os;
+		this.totalMemory = memory;
+		this.hostname = hostname;
+		this.performance = performance;
+		
 		findExistingClientRecords();
 			
 		try {
@@ -141,5 +161,12 @@ public class ConnectedClient {
 	}
 	public int getTotalMemory(){
 		return totalMemory;
+	}
+	
+	public void setPerformance(int performance){
+		this.performance = performance;
+	}
+	public int getPerformance(){
+		return performance;
 	}
 }

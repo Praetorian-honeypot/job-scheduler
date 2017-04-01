@@ -165,7 +165,7 @@ public class Server extends Observable implements Runnable {
 			if (clientId == 0)
 				database.addClient(client, cpuName, cpuCores, os, memory, hostname, performance);
 			
-			ConnectedClient connectedClient = new ConnectedClient(this, client);
+			ConnectedClient connectedClient = new ConnectedClient(this, client, cpuName, cpuCores, os, memory, hostname, performance);
 			
 			clients.add(connectedClient);
 			update();
