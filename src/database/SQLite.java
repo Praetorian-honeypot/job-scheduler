@@ -84,6 +84,27 @@ public class SQLite {
 		}
 	}
 	
+	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
+			String hostname) {
+		try {
+			Statement stmt = c.createStatement();
+			int time = (int) (new Date().getTime() / 1000);
+			//TODO: add memory (and maybe os and own hostname?) to db
+			String sql = "INSERT INTO clients (address, hostname, port, cpuName, cpuCores, createDate) " +
+						 "VALUES ('" + client.getAddress() + "', '" + 
+						 				client.getHostName()+"', " + 
+						 				client.getPort()+ ", '" + 
+						 				cpuName + "', " +
+						 				cpuCores + ", " +
+						 				time+ ");";
+			stmt.executeUpdate(sql);
+			server.log("Succesfully added client");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
+	}
+	
 	public Collection<? extends ClientReport> getClientReports(int clientId, InetSocketAddress clientAddress) {
 		ArrayList<ClientReport> clientReports = new ArrayList<ClientReport>();
 		
@@ -216,5 +237,6 @@ public class SQLite {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
+
 }
 

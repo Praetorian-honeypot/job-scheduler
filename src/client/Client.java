@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -31,6 +32,10 @@ import javax.management.ReflectionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
 public class Client extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Client.class.getName() );
 	protected InetSocketAddress address;
@@ -39,6 +44,9 @@ public class Client extends Observable implements Runnable {
 	private Socket serverSocket = null;
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	public static final String BROKER = "asa";
+	private Channel channel;
+	
 	
 	/**
 	 * Constructs a new frame for the client.
@@ -116,12 +124,22 @@ public class Client extends Observable implements Runnable {
 			if (serverSocket == null)
 				serverSocket = new Socket(server.getAddress(), server.getPort());
 			
+			ConnectionFactory factory = new ConnectionFactory();
+		    factory.setHost(BROKER);
+			Connection connection = factory.newConnection();
+			channel = connection.createChannel();
+			channel.exchangeDeclare("server", "direct");
+			
+			channel.queueDeclare("serverIn",false,false,false,null);
+			
+			log("Connected to MQ broker.");
+			
 			if (clientInputHandler.isSuspended())
 				clientInputHandler.resume();
 			
 			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
-			sendCommand("connect");
-		} catch (IOException exception) {
+			send(hardwareSpec(getCommand("connect")));
+		} catch (IOException | TimeoutException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
@@ -171,7 +189,7 @@ public class Client extends Observable implements Runnable {
 			reportData.put("cpuTemp", cpuTemp);
 			
 			String message = reportData.toString();
-			clientInputHandler.getChannel().basicPublish("server","report", null, message.getBytes());
+			channel.basicPublish("server","report", null, message.getBytes());
 			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
@@ -181,11 +199,21 @@ public class Client extends Observable implements Runnable {
 	}
 	
 	public void sendHardwareSpec(){
-		JSONObject reportData = getCommand("spec");
+		send(hardwareSpec(null));
+	}
+	
+	public JSONObject hardwareSpec(JSONObject in){
+		JSONObject specData;
+		if(in != null){
+			specData = in;
+		} else {
+			specData = getCommand("spec");
+		}
+		
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
-			reportData.put("type", "spec");
+			specData.put("type", "spec");
 			
 			String cpuName = hw.getProcessor().getName();
 			int cpuCores = hw.getProcessor().getPhysicalProcessorCount();
@@ -195,19 +223,16 @@ public class Client extends Observable implements Runnable {
 			long totalMemory = hw.getMemory().getTotal() / (1024*1024);
 			String hostname = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
 			
-			reportData.put("cpuName", cpuName);
-			reportData.put("cpuCores", cpuCores);
-			reportData.put("operatingSystem", operatingSystem);
-			reportData.put("totalMemory",totalMemory);
-			reportData.put("hostname", hostname);
-			
-			String message = reportData.toString();
-			clientInputHandler.getChannel().basicPublish("server","spec", null, message.getBytes());			
+			specData.put("cpuName", cpuName);
+			specData.put("cpuCores", cpuCores);
+			specData.put("operatingSystem", operatingSystem);
+			specData.put("totalMemory",totalMemory);
+			specData.put("hostname", hostname);	
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
-		} catch (IOException exception) {
-			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
+		
+		return specData;
 	}
 	
 	public void sendCommand(String type) {
