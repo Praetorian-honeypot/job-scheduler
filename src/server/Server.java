@@ -36,7 +36,7 @@ public class Server extends Observable implements Runnable {
 	private ServerInputHandler serverInputHandler;
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	private SQLite database;
-	public static final String BASE_URI = "http://localhost:8080/api/";
+	public static final String API_URI = "http://localhost:8080/api/";
 	public static final String BROKER = "asa"; //TODO: Store broker setup in configuration file
 	
 	//Message queue stuff
@@ -79,7 +79,7 @@ public class Server extends Observable implements Runnable {
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
 		this.setDatabase(new SQLite(this));
-		RestAPI rest = new RestAPI(this, BASE_URI);
+		RestAPI rest = new RestAPI(this, API_URI);
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
