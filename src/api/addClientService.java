@@ -26,17 +26,17 @@ public class addClientService{
 		Server server = (Server) config.getProperty("server");
 		String[] split = address.split("-");
 		InetSocketAddress clientaddr = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
-		if(!server.clientExists(clientaddr)) {
+		if(server.clientExists(clientaddr)) {
 			jsonObject.put("result", "Client with address " + address + " already exists");
 		} else { 
 			server.addClient(clientaddr);
-			if(!server.clientExists(clientaddr)) {
+			if(server.clientExists(clientaddr)) {
 				jsonObject.put("result", "addition succesful");
 			} else { 
 				jsonObject.put("result", "addition failed");
 			}
 		}
-		String result = "@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
+		String result = "@Produces(\"application/json\") Output: \n\nAdd Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 }
 

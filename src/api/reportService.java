@@ -60,6 +60,8 @@ public class reportService{
 			ArrayList<Object> data = new ArrayList<Object>();
 			data.add(reports.get(i).getClientAddress());
 			data.add(reports.get(i).getCpuLoad());
+			System.out.println(reports.get(i).getCpuLoad());
+			System.out.println(reports.get(i).getCpuTemp());
 			data.add(reports.get(i).getMemAvailable());
 			data.add(reports.get(i).getCpuTemp());
 			data.add(reports.get(i).getCreateDate());

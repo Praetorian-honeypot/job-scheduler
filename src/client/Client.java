@@ -33,7 +33,7 @@ public class Client extends Observable implements Runnable {
 	private Socket serverSocket = null;
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	public static final String BROKER = "asa";
+	public static final String BROKER = "www.renebrals.nl";
 	private Channel channel;
 	
 	
