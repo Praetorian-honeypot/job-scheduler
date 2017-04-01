@@ -40,12 +40,6 @@ public class Client extends Observable implements Runnable {
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
-	/**
-	 * Constructs a new frame for the client.
-	 * 
-	 * @param frame the frame
-	 */
-	
 	public Client(InetSocketAddress address) {
 		this.address = address;
 		logger.setLevel(Level.ALL);
