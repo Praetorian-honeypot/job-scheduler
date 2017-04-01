@@ -178,9 +178,7 @@ public class Client extends Observable implements Runnable {
 		JSONObject reportData = getCommand("spec");
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
-		try {
-			reportData.put("type", "spec");
-			
+		try {		
 			String cpuName = hw.getProcessor().getName();
 			int cpuCores = hw.getProcessor().getPhysicalProcessorCount();
 			String operatingSystem = sysInfo.getOperatingSystem().getManufacturer() +

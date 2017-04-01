@@ -75,7 +75,7 @@ public class SQLite {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, port, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, hostport, createDate) " +
 						 "VALUES ('"+client.getAddress()+"', '"+client.getHostName()+"', "+client.getPort()+", "+time+");";
 			stmt.executeUpdate(sql);
 			server.log("Succesfully added client");
