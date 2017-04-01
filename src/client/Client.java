@@ -217,7 +217,8 @@ public class Client extends Observable implements Runnable {
 			specData.put("cpuCores", cpuCores);
 			specData.put("operatingSystem", operatingSystem);
 			specData.put("totalMemory",totalMemory);
-			specData.put("hostname", hostname);	
+			specData.put("hostname", hostname);
+			specData.put("performance", benchmark());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
@@ -281,5 +282,21 @@ public class Client extends Observable implements Runnable {
 
 	public InetSocketAddress getServerAddress() {
 		return serverAddress;
+	}
+	
+	public int benchmark(){
+		// Returns a very crude measure of the system's single-core performance by
+		// calculating pi using the Leibniz formula to a high number of terms
+		// and measuring execution time.
+		
+		// Higher is faster.
+		// As an example, an Intel Core i5-4690 gets a result of roughly 1100.
+		
+		double start = System.nanoTime();
+		double pi = 0;
+		for(int k = 0; k < 1e7; k++){
+			pi += 4.0 * (k % 2 == 0 ? 1 : -1) / (2 * k + 1);
+		}
+		return (int)(1e11 / (System.nanoTime() - start));
 	}
 }

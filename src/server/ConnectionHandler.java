@@ -80,8 +80,9 @@ public class ConnectionHandler implements Runnable {
 					int memory = Integer.parseInt(json.getString("totalMemory"));
 					String os = json.getString("operatingSystem");
 					String hostname = json.getString("ownHostname");
+					int performance = Integer.parseInt(json.getString("performance"));
 					
-					server.addClient(client, cpuName, cpuCores, os, memory, hostname);
+					server.addClient(client, cpuName, cpuCores, os, memory, hostname, performance);
 					break;
 				case "disconnect":
 					server.removeClient(client);

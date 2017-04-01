@@ -157,13 +157,13 @@ public class Server extends Observable implements Runnable {
 		}
 	}
 	
-	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory, String hostname) {
+	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory, String hostname, int performance) {
 		if (!clientExists(client)) {
 			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
 			
 			int clientId = database.findClient(client);
 			if (clientId == 0)
-				database.addClient(client, cpuName, cpuCores, os, memory, hostname);
+				database.addClient(client, cpuName, cpuCores, os, memory, hostname, performance);
 			
 			ConnectedClient connectedClient = new ConnectedClient(this, client);
 			
