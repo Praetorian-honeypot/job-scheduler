@@ -1,6 +1,5 @@
 package server;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -16,15 +14,6 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.Consumer;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-
 import api.RestAPI;
 import database.SQLite;
 
@@ -37,13 +26,6 @@ public class Server extends Observable implements Runnable {
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	private SQLite database;
 	public static final String BASE_URI = "http://localhost:8080/api/";
-	public static final String BROKER = "asa"; //TODO: Store broker setup in configuration file
-	
-	//Message queue stuff
-	private Channel channel;
-	private Connection connection;
-	private boolean queueConnected = false;
-	private Consumer reportConsumer;
 	
 	public Server(InetSocketAddress address) {
 		this.address = address;
@@ -100,6 +82,31 @@ public class Server extends Observable implements Runnable {
 			ClientReport report = new ClientReport(connectedClient.getClientAddress(), cpuLoad, memAvailable, cpuTemp);
 			connectedClient.addReport(report);
 			log("Received report from client on " + clientAddress);
+		} else {
+			//TODO: faulty report handling??
+		}
+	}
+	
+	public void handleHardwareSpec(String result) throws JSONException{
+		JSONObject json = new JSONObject(result);
+		
+		String clientAddress = json.getString("address").trim();
+		if (clientAddress.equals("localhost/127.0.0.1"))
+			clientAddress = "localhost";
+		int clientPort = Integer.parseInt(json.getString("port"));
+		InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
+		
+		if(json.getString("type").equals("spec")){
+			ConnectedClient connectedClient = getClient(client);
+			
+			String cpuName = json.getString("cpuName");
+			int cpuCores = Integer.parseInt(json.getString("cpuCores"));
+			int totalMemory = Integer.parseInt(json.getString("totalMemory"));
+			String operatingSystem = json.getString("operatingSystem");
+			String hostname = json.getString("ownHostname");
+			
+			//TODO: store in DB or something.
+			log("Received hardware specifications from client on " + clientAddress);
 		} else {
 			//TODO: faulty report handling??
 		}

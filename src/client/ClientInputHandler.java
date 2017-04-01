@@ -79,9 +79,9 @@ public class ClientInputHandler implements Runnable {
 		    factory.setHost(BROKER);
 			Connection connection = factory.newConnection();
 			channel = connection.createChannel();
-			channel.exchangeDeclare("reports", "direct");
+			channel.exchangeDeclare("server", "direct");
 			
-			channel.queueDeclare("server",false,false,false,null);
+			channel.queueDeclare("serverIn",false,false,false,null);
 			
 			queueConnected = true;
 			client.log("Connected to MQ broker.");
@@ -135,7 +135,10 @@ public class ClientInputHandler implements Runnable {
 				case "report":
 					client.log("Server requests report");
 					client.sendReport();
-					break;				
+					break;
+				case "spec":
+					client.log("Server requests client hardware specifications");
+					client.sendHardwareSpec();
 			}
 		} catch (JSONException exception) {
 			client.log( Level.SEVERE, exception.toString(), exception );

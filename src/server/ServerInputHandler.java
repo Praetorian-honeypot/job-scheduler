@@ -35,10 +35,11 @@ public class ServerInputHandler implements Runnable {
 		try {
 			Connection connection = factory.newConnection();
 			channel = connection.createChannel();
-			channel.queueDeclare("server",false,false,false,null);
-			channel.exchangeDeclare("reports", "direct");
+			channel.queueDeclare("serverIn",false,false,false,null);
+			channel.exchangeDeclare("server", "direct");
 			
-			channel.queueBind("server","reports","report");
+			channel.queueBind("serverIn","server","report");
+			channel.queueBind("serverIn","server","spec");
 		    reportConsumer = new DefaultConsumer(channel) {
 		    	@Override
 		    	public void handleDelivery(String consumerTag, Envelope envelope,
@@ -50,6 +51,13 @@ public class ServerInputHandler implements Runnable {
 		    			try {
 		    				String message = new String(body, "UTF-8");
 							server.handleReport(message);
+						} catch (JSONException exception) {
+							server.log(Level.SEVERE, exception.toString(), exception);
+						}
+		    		} else if(envelope.getRoutingKey().equals("spec")){
+		    			try {
+		    				String message = new String(body, "UTF-8");
+							server.handleHardwareSpec(message);
 						} catch (JSONException exception) {
 							server.log(Level.SEVERE, exception.toString(), exception);
 						}
@@ -93,7 +101,7 @@ public class ServerInputHandler implements Runnable {
 		public void run() {
 			try {
 				while(handler.running){
-					handler.channel.basicConsume("server",true,handler.reportConsumer);
+					handler.channel.basicConsume("serverIn",true,handler.reportConsumer);
 				}
 			} catch (IOException exception) {
 				handler.server.log( Level.SEVERE, exception.toString(), exception );

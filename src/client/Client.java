@@ -171,8 +171,38 @@ public class Client extends Observable implements Runnable {
 			reportData.put("cpuTemp", cpuTemp);
 			
 			String message = reportData.toString();
-			clientInputHandler.getChannel().basicPublish("reports","report", null, message.getBytes());
+			clientInputHandler.getChannel().basicPublish("server","report", null, message.getBytes());
 			
+		} catch (JSONException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
+		} catch (IOException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
+	public void sendHardwareSpec(){
+		JSONObject reportData = getCommand("spec");
+		SystemInfo sysInfo = new SystemInfo();
+		HardwareAbstractionLayer hw = sysInfo.getHardware();
+		try {
+			reportData.put("type", "spec");
+			
+			String cpuName = hw.getProcessor().getName();
+			int cpuCores = hw.getProcessor().getPhysicalProcessorCount();
+			String operatingSystem = sysInfo.getOperatingSystem().getManufacturer() +
+					" " + sysInfo.getOperatingSystem().getFamily() +
+					" " + sysInfo.getOperatingSystem().getVersion();
+			long totalMemory = hw.getMemory().getTotal() / (1024*1024);
+			String hostname = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
+			
+			reportData.put("cpuName", cpuName);
+			reportData.put("cpuCores", cpuCores);
+			reportData.put("operatingSystem", operatingSystem);
+			reportData.put("totalMemory",totalMemory);
+			reportData.put("hostname", hostname);
+			
+			String message = reportData.toString();
+			clientInputHandler.getChannel().basicPublish("server","spec", null, message.getBytes());			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		} catch (IOException exception) {
@@ -237,37 +267,4 @@ public class Client extends Observable implements Runnable {
 	public InetSocketAddress getServerAddress() {
 		return serverAddress;
 	}
-	
-	public static double getSystemCpuLoad() {
-	    MBeanServer platformBeanServer = ManagementFactory.getPlatformMBeanServer();
-	    ObjectName beanName;
-	    AttributeList attrList;
-		try {
-			beanName = ObjectName.getInstance("java.lang:type=OperatingSystem");
-			attrList = platformBeanServer.getAttributes(beanName, new String[]{"SystemCpuLoad"});
-		} catch (MalformedObjectNameException | 
-				NullPointerException | 
-				InstanceNotFoundException | 
-				ReflectionException e) {
-			logger.log( Level.SEVERE, e.toString(), e );
-			return Double.NaN;
-		}
-	    
-	    
-	    if (attrList.isEmpty()){
-	    	return Double.NaN;
-	    }
-
-	    Attribute attr = (Attribute)attrList.get(0);
-	    Double value  = (Double)attr.getValue();
-
-	    if (value == -1.0){
-	    	//Strange quirk: the call returns -1.0 when the JVM has not been running for long enough
-	    	//It usually starts reporting proper values after half a second.
-	    	return Double.NaN;
-	    }
-	    
-	    return value;
-	}
-	
 }
