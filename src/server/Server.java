@@ -12,8 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import api.RestAPI;
 import database.SQLite;
 
@@ -63,53 +61,6 @@ public class Server extends Observable implements Runnable {
 		this.setDatabase(new SQLite(this));
 		RestAPI rest = new RestAPI(this, BASE_URI);
 		logger.log(Level.FINE, "Server is initiated");
-	}
-	
-	public void handleReport(String result) throws JSONException{
-		JSONObject json = new JSONObject(result);
-		
-		String clientAddress = json.getString("address").trim();
-		if (clientAddress.equals("localhost/127.0.0.1"))
-			clientAddress = "localhost";
-		int clientPort = Integer.parseInt(json.getString("port"));
-		InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
-		
-		if(json.getString("type").equals("report")){
-			ConnectedClient connectedClient = getClient(client);
-			double cpuLoad = Double.parseDouble(json.getString("cpuLoad"));
-			double memAvailable = Double.parseDouble(json.getString("memAvailable"));
-			double cpuTemp = Double.parseDouble(json.getString("cpuTemp"));
-			ClientReport report = new ClientReport(connectedClient.getClientAddress(), cpuLoad, memAvailable, cpuTemp);
-			connectedClient.addReport(report);
-			log("Received report from client on " + clientAddress);
-		} else {
-			//TODO: faulty report handling??
-		}
-	}
-	
-	public void handleHardwareSpec(String result) throws JSONException{
-		JSONObject json = new JSONObject(result);
-		
-		String clientAddress = json.getString("address").trim();
-		if (clientAddress.equals("localhost/127.0.0.1"))
-			clientAddress = "localhost";
-		int clientPort = Integer.parseInt(json.getString("port"));
-		InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
-		
-		if(json.getString("type").equals("spec")){
-			ConnectedClient connectedClient = getClient(client);
-			
-			String cpuName = json.getString("cpuName");
-			int cpuCores = Integer.parseInt(json.getString("cpuCores"));
-			int totalMemory = Integer.parseInt(json.getString("totalMemory"));
-			String operatingSystem = json.getString("operatingSystem");
-			String hostname = json.getString("ownHostname");
-			
-			//TODO: store in DB or something.
-			log("Received hardware specifications from client on " + clientAddress);
-		} else {
-			//TODO: faulty report handling??
-		}
 	}
 	
 	public void update() {
