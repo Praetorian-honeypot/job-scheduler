@@ -75,13 +75,35 @@ public class SQLite {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, port, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, hostport, createDate) " +
 						 "VALUES ('"+client.getAddress()+"', '"+client.getHostName()+"', "+client.getPort()+", "+time+");";
 			stmt.executeUpdate(sql);
 			server.log("Succesfully added client");
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+	
+	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
+			String hostname, int performance) {
+		try {
+			Statement stmt = c.createStatement();
+			int time = (int) (new Date().getTime() / 1000);
+			String sql = "INSERT INTO clients (address, hostname, port, cpuName, cpuCores, memory, performance, createDate) " +
+						 "VALUES ('" + client.getAddress() + "', '" + 
+						 				client.getHostName()+"', " + 
+						 				client.getPort()+ ", '" + 
+						 				cpuName + "', " +
+						 				cpuCores + ", " +
+						 				memory + ", " +
+						 				performance + ", " +
+						 				time+ ");";
+			stmt.executeUpdate(sql);
+			server.log("Succesfully added client");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
 	}
 	
 	public Collection<? extends ClientReport> getClientReports(int clientId, InetSocketAddress clientAddress) {
@@ -139,10 +161,13 @@ public class SQLite {
 	                   "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
-	                   " port           INTEGER NOT NULL, " + 
+	                   " hostport       INTEGER NOT NULL, " + 
+	                   " displayName    TEXT NOT NULL, " + 
 	                   " clientGroup    INTEGER, " + 
 	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
+	                   " memoryAmount   INTEGER DEFAULT 0, " + 
+	                   " performance    INTEGER DEFAULT 0, " + 
 	                   " createDate     INTEGER)"; 
 			stmt.executeUpdate(sql);
 			stmt.close();
@@ -216,5 +241,6 @@ public class SQLite {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
+
 }
 

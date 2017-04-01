@@ -17,6 +17,12 @@ public class ConnectedClient {
 	private Socket clientSocket = null;
 	private ArrayList<ClientReport> reports = new ArrayList<ClientReport>();
 	
+	private String cpuName;
+	private int cpuCores;
+	private int totalMemory;
+	private String operatingSystem;
+	private String hostname;	
+	
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
@@ -100,5 +106,40 @@ public class ConnectedClient {
 	
 	public ClientReport getLatestReport() {
 		return (reports.size() > 0) ? reports.get(reports.size() - 1) : null;
+	}
+	
+	public void setCpuName(String cpuName){
+		this.cpuName = cpuName;
+	}
+	public String getCpuName(){
+		return cpuName;
+	}
+	
+	public void setOperatingSystem(String os){
+		this.operatingSystem = os;
+	}
+	public String getOperatingSystem(){
+		return operatingSystem;
+	}
+	
+	public void setHostname(String hostname){
+		this.hostname = hostname;
+	}
+	public String getHostname(){
+		return hostname;
+	}
+	
+	public void setCpuCores(int cpuCores){
+		this.cpuCores = cpuCores;
+	}
+	public int getCpuCores(){
+		return cpuCores;
+	}
+	
+	public void setTotalMemory(int memory){
+		this.totalMemory = memory;
+	}
+	public int getTotalMemory(){
+		return totalMemory;
 	}
 }

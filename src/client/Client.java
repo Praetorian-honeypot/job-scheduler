@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -31,6 +32,10 @@ import javax.management.ReflectionException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+
 public class Client extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Client.class.getName() );
 	protected InetSocketAddress address;
@@ -39,12 +44,9 @@ public class Client extends Observable implements Runnable {
 	private Socket serverSocket = null;
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	public static final String BROKER = "asa";
+	private Channel channel;
 	
-	/**
-	 * Constructs a new frame for the client.
-	 * 
-	 * @param frame the frame
-	 */
 	
 	public Client(InetSocketAddress address) {
 		this.address = address;
@@ -116,12 +118,22 @@ public class Client extends Observable implements Runnable {
 			if (serverSocket == null)
 				serverSocket = new Socket(server.getAddress(), server.getPort());
 			
+			ConnectionFactory factory = new ConnectionFactory();
+		    factory.setHost(BROKER);
+			Connection connection = factory.newConnection();
+			channel = connection.createChannel();
+			channel.exchangeDeclare("server", "direct");
+			
+			channel.queueDeclare("serverIn",false,false,false,null);
+			
+			log("Connected to MQ broker.");
+			
 			if (clientInputHandler.isSuspended())
 				clientInputHandler.resume();
 			
 			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
-			sendCommand("connect");
-		} catch (IOException exception) {
+			send(hardwareSpec(getCommand("connect")));
+		} catch (IOException | TimeoutException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
@@ -155,8 +167,6 @@ public class Client extends Observable implements Runnable {
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
-			reportData.put("type", "report");
-			
 			double cpuLoad = hw.getProcessor().getSystemLoadAverage();
 			if(cpuLoad == -1.0){
 				//Windows doesn't report load averages, fallback.
@@ -171,13 +181,49 @@ public class Client extends Observable implements Runnable {
 			reportData.put("cpuTemp", cpuTemp);
 			
 			String message = reportData.toString();
-			clientInputHandler.getChannel().basicPublish("reports","report", null, message.getBytes());
+			channel.basicPublish("server","report", null, message.getBytes());
 			
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		} catch (IOException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+	
+	public void sendHardwareSpec(){
+		send(hardwareSpec(null));
+	}
+	
+	public JSONObject hardwareSpec(JSONObject in){
+		JSONObject specData;
+		if(in != null){
+			specData = in;
+		} else {
+			specData = getCommand("spec");
+		}
+		
+		SystemInfo sysInfo = new SystemInfo();
+		HardwareAbstractionLayer hw = sysInfo.getHardware();
+		try {
+			String cpuName = hw.getProcessor().getName();
+			int cpuCores = hw.getProcessor().getPhysicalProcessorCount();
+			String operatingSystem = sysInfo.getOperatingSystem().getManufacturer() +
+					" " + sysInfo.getOperatingSystem().getFamily() +
+					" " + sysInfo.getOperatingSystem().getVersion();
+			long totalMemory = hw.getMemory().getTotal() / (1024*1024);
+			String hostname = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
+			
+			specData.put("cpuName", cpuName);
+			specData.put("cpuCores", cpuCores);
+			specData.put("operatingSystem", operatingSystem);
+			specData.put("totalMemory",totalMemory);
+			specData.put("hostname", hostname);
+			specData.put("performance", benchmark());
+		} catch (JSONException exception) {
+			logger.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
+		return specData;
 	}
 	
 	public void sendCommand(String type) {
@@ -238,36 +284,19 @@ public class Client extends Observable implements Runnable {
 		return serverAddress;
 	}
 	
-	public static double getSystemCpuLoad() {
-	    MBeanServer platformBeanServer = ManagementFactory.getPlatformMBeanServer();
-	    ObjectName beanName;
-	    AttributeList attrList;
-		try {
-			beanName = ObjectName.getInstance("java.lang:type=OperatingSystem");
-			attrList = platformBeanServer.getAttributes(beanName, new String[]{"SystemCpuLoad"});
-		} catch (MalformedObjectNameException | 
-				NullPointerException | 
-				InstanceNotFoundException | 
-				ReflectionException e) {
-			logger.log( Level.SEVERE, e.toString(), e );
-			return Double.NaN;
+	public int benchmark(){
+		// Returns a very crude measure of the system's single-core performance by
+		// calculating pi using the Leibniz formula to a high number of terms
+		// and measuring execution time.
+		
+		// Higher is faster.
+		// As an example, an Intel Core i5-4690 gets a result of roughly 1100.
+		
+		double start = System.nanoTime();
+		double pi = 0;
+		for(int k = 0; k < 1e7; k++){
+			pi += 4.0 * (k % 2 == 0 ? 1 : -1) / (2 * k + 1);
 		}
-	    
-	    
-	    if (attrList.isEmpty()){
-	    	return Double.NaN;
-	    }
-
-	    Attribute attr = (Attribute)attrList.get(0);
-	    Double value  = (Double)attr.getValue();
-
-	    if (value == -1.0){
-	    	//Strange quirk: the call returns -1.0 when the JVM has not been running for long enough
-	    	//It usually starts reporting proper values after half a second.
-	    	return Double.NaN;
-	    }
-	    
-	    return value;
+		return (int)(1e11 / (System.nanoTime() - start));
 	}
-	
 }
