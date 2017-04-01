@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ConnectionHandler implements Runnable {
+public class SocketConnectionHandler implements Runnable {
 
 	private Socket client;
 	private volatile boolean running = true;
@@ -18,7 +18,7 @@ public class ConnectionHandler implements Runnable {
 	private DataInputStream dis;
 	private Server server;
 
-	public ConnectionHandler(Socket client, Server server) {
+	public SocketConnectionHandler(Socket client, Server server) {
 		this.client = client;
 		this.server = server;
 	}

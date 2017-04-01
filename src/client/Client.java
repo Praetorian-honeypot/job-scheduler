@@ -3,7 +3,6 @@ package client;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.DateFormat;
@@ -17,24 +16,14 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import oshi.SystemInfo;
-import oshi.hardware.HardwareAbstractionLayer;
-
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+
+import oshi.SystemInfo;
+import oshi.hardware.HardwareAbstractionLayer;
 
 public class Client extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Client.class.getName() );
@@ -293,6 +282,7 @@ public class Client extends Observable implements Runnable {
 		// As an example, an Intel Core i5-4690 gets a result of roughly 1100.
 		
 		double start = System.nanoTime();
+		@SuppressWarnings("unused")
 		double pi = 0;
 		for(int k = 0; k < 1e7; k++){
 			pi += 4.0 * (k % 2 == 0 ? 1 : -1) / (2 * k + 1);

@@ -6,15 +6,10 @@ import java.io.InputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
 
 public class ClientInputHandler implements Runnable {
 	private Client client;
