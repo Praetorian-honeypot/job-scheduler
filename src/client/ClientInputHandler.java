@@ -27,7 +27,7 @@ public class ClientInputHandler implements Runnable {
 	private DataInputStream dis;
 	private Channel channel;
 	private boolean queueConnected= false;
-	public static final String BROKER = "asa"; //TODO: Store broker setup in configuration file
+	public static final String BROKER = "renebrals.nl";
 	
 	public ClientInputHandler(Client client) {
 		this.client = client;

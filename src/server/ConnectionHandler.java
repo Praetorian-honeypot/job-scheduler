@@ -10,9 +10,6 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-
 public class ConnectionHandler implements Runnable {
 
 	private Socket client;

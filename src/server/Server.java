@@ -104,6 +104,7 @@ public class Server extends Observable implements Runnable {
 			//TODO: faulty report handling??
 		}
 	}
+	
 	public void update() {
 		this.setChanged();
 		this.notifyObservers();

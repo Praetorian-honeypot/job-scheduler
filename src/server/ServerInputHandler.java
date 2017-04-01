@@ -22,7 +22,7 @@ public class ServerInputHandler implements Runnable {
 	Thread runner;
 	private volatile boolean running = true;
 	private Channel channel;
-	private static final String BROKER = "asa";
+	private static final String BROKER = "renebrals.nl";
 	private Consumer reportConsumer;
 	
 	public ServerInputHandler(Server server) {
@@ -50,9 +50,8 @@ public class ServerInputHandler implements Runnable {
 		    			try {
 		    				String message = new String(body, "UTF-8");
 							server.handleReport(message);
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						} catch (JSONException exception) {
+							server.log(Level.SEVERE, exception.toString(), exception);
 						}
 		    		}
 		    	}
@@ -60,9 +59,8 @@ public class ServerInputHandler implements Runnable {
 		    server.log("Connected to MQ broker.");
 		    
 		    
-		} catch (IOException | TimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException | TimeoutException exception) {
+			server.log(Level.SEVERE, exception.toString(), exception);
 		}
 		
 		try {
