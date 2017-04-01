@@ -149,8 +149,6 @@ public class Client extends Observable implements Runnable {
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
-			reportData.put("type", "report");
-			
 			double cpuLoad = hw.getProcessor().getSystemLoadAverage();
 			if(cpuLoad == -1.0){
 				//Windows doesn't report load averages, fallback.
