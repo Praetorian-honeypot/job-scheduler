@@ -75,7 +75,7 @@ public class SQLite {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, port, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, hostport, createDate) " +
 						 "VALUES ('"+client.getAddress()+"', '"+client.getHostName()+"', "+client.getPort()+", "+time+");";
 			stmt.executeUpdate(sql);
 			server.log("Succesfully added client");
@@ -89,13 +89,13 @@ public class SQLite {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			//TODO: add memory (and maybe os and own hostname?) to db
-			String sql = "INSERT INTO clients (address, hostname, port, cpuName, cpuCores, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, port, cpuName, cpuCores, memory, createDate) " +
 						 "VALUES ('" + client.getAddress() + "', '" + 
 						 				client.getHostName()+"', " + 
 						 				client.getPort()+ ", '" + 
 						 				cpuName + "', " +
 						 				cpuCores + ", " +
+						 				memory + ", " +
 						 				time+ ");";
 			stmt.executeUpdate(sql);
 			server.log("Succesfully added client");
@@ -160,10 +160,12 @@ public class SQLite {
 	                   "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
-	                   " port           INTEGER NOT NULL, " + 
+	                   " hostport       INTEGER NOT NULL, " + 
+	                   " displayName    TEXT NOT NULL, " + 
 	                   " clientGroup    INTEGER, " + 
 	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
+	                   " memoryAmount   INTEGER DEFAULT 0, " + 
 	                   " createDate     INTEGER)"; 
 			stmt.executeUpdate(sql);
 			stmt.close();

@@ -48,12 +48,6 @@ public class Client extends Observable implements Runnable {
 	private Channel channel;
 	
 	
-	/**
-	 * Constructs a new frame for the client.
-	 * 
-	 * @param frame the frame
-	 */
-	
 	public Client(InetSocketAddress address) {
 		this.address = address;
 		logger.setLevel(Level.ALL);
@@ -173,8 +167,6 @@ public class Client extends Observable implements Runnable {
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
-			reportData.put("type", "report");
-			
 			double cpuLoad = hw.getProcessor().getSystemLoadAverage();
 			if(cpuLoad == -1.0){
 				//Windows doesn't report load averages, fallback.
@@ -213,8 +205,6 @@ public class Client extends Observable implements Runnable {
 		SystemInfo sysInfo = new SystemInfo();
 		HardwareAbstractionLayer hw = sysInfo.getHardware();
 		try {
-			specData.put("type", "spec");
-			
 			String cpuName = hw.getProcessor().getName();
 			int cpuCores = hw.getProcessor().getPhysicalProcessorCount();
 			String operatingSystem = sysInfo.getOperatingSystem().getManufacturer() +
