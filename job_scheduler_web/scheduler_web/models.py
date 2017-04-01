@@ -18,7 +18,8 @@ class LoadMeasurement(models.Model):
 
 class Server(models.Model):
     hostname = models.CharField(max_length = 32)
-    logicalAddress = models.CharField(max_length = 32)
+    hostport = models.IntegerField(default = 8901)
+    displayName = models.CharField(max_length = 32)
     cpuName = models.CharField(max_length = 32)
     cpuCores = models.IntegerField(default = 1, blank=True)
     memoryAmount = models.FloatField()

@@ -8,6 +8,7 @@ from time import strftime
 import csv
 
 from .models import Server, Job, LoadMeasurement
+from .forms import AddServerForm, AddJobForm
 
 import rest
 
@@ -45,18 +46,36 @@ def jobs(request):
     template = loader.get_template('scheduler_web/jobs.html')
     return HttpResponse(template.render(context,request))
 
-"""
-def submitServer(request):
-    errors = []
+def addServer(request):
+    template = loader.get_template('scheduler_web/addServer.html')
 
-    if 'serverHostname' in request.POST and request.POST['serverHostname'] != '':
-        hostname = request.POST['serverHostname']
+    if request.method == 'POST':
+        form = AddServerForm(request.POST)
+
+        if form.is_valid():
+            #send API request to server
+            return HttpResponseRedirect('/servers/')
     else:
-        errors.append("No Hostname specified.")
+        form = AddServerForm()
 
-    if not errors:
-        serverURL = "0.0.0.0" #TODO: move server URL to settings file
-"""
+        context = {'form' : form}
+    return HttpResponse(template.render(context,request))
+
+def addJob(request):
+    template = loader.get_template('scheduler_web/addJob.html')
+
+    if request.method == 'POST':
+        form = AddJobForm(request.POST)
+
+        if form.is_valid():
+            #send API request to server
+            return HttpResponseRedirect('/jobs/')
+    else:
+        form = AddJobForm()
+
+        context = {'form' : form}
+    return HttpResponse(template.render(context,request))
+
 
 def loadMeasurementsCSV(request,serverID):
     server = Server.objects.get(pk=serverID)
