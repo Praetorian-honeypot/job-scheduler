@@ -24,7 +24,7 @@ public class ServerInputHandler implements Runnable {
 	Thread runner;
 	private volatile boolean running = true;
 	private Channel channel;
-	private static final String BROKER = "www.renebrals.nl";
+	private static final String BROKER = "asa";
 	private Consumer reportConsumer;
 	
 	public ServerInputHandler(Server server) {
