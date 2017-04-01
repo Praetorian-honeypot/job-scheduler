@@ -139,10 +139,12 @@ public class SQLite {
 	                   "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
-	                   " port           INTEGER NOT NULL, " + 
+	                   " hostport       INTEGER NOT NULL, " + 
+	                   " displayName    TEXT NOT NULL, " + 
 	                   " clientGroup    INTEGER, " + 
 	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
+	                   " memoryAmount   INTEGER DEFAULT 0, " + 
 	                   " createDate     INTEGER)"; 
 			stmt.executeUpdate(sql);
 			stmt.close();
