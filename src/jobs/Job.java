@@ -1,5 +1,54 @@
 package jobs;
 
-public class Job {
+import java.util.Date;
 
+public class Job {
+	//private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private Date deadline;
+	private String command;
+	private int priority;
+	private int id;
+	
+	public Job(String command, int priority, int deadline) {
+		this.setCommand(command);
+		this.setPriority(priority);
+		this.setDeadline(new Date(deadline * 1000L));
+	}
+	
+	public Job(int id, String command, int priority, int deadline) {
+		this(command, priority, deadline);
+		this.setId(id);
+	}
+
+	public String getCommand() {
+		return command;
+	}
+
+	public void setCommand(String command) {
+		this.command = command;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
+	public Date getDeadline() {
+		return deadline;
+	}
+
+	public void setDeadline(Date deadline) {
+		this.deadline = deadline;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 }

@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 
+import jobs.Job;
 import jobs.JobSchedulingEvent;
 import server.ClientReport;
 import server.Server;
@@ -169,6 +170,39 @@ public class SQLite {
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+	
+	public void setJobStatus(int jobId, int schedStatus) {
+		try {			
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
+			int time = (int) (new Date().getTime() / 1000);
+			stmt.setInt(1, jobId);
+			stmt.setInt(2, time);
+			stmt.setInt(3, schedStatus);
+			stmt.executeUpdate();
+			server.log("Succesfully modified job status to: " + JobSchedulingEvent.getStatus(schedStatus));
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
+	public void setJobStatus(int jobId, String schedStatus) {
+		int statusId = JobSchedulingEvent.getStatusCode(schedStatus);
+		setJobStatus(jobId, statusId);
+	}
+	
+	public Job findJob(String table, String whereStatement) {
+		Job job = null;
+		try {
+			Statement stmt = c.createStatement();
+			String sql = "SELECT * FROM " + table + " WHERE " + whereStatement;
+			ResultSet found = stmt.executeQuery(sql);
+			if (found.next())
+				job = new Job(found.getInt("id"), found.getString("command"), found.getInt("priority"), found.getInt("deadline"));
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return job;
 	}
 	
 	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,

@@ -12,4 +12,8 @@ public class JobSchedulingEvent {
 		}
 		return code;
 	}
+	
+	public static String getStatus(int code) {
+		return (code < schedStatuses.length - 1) ? schedStatuses[code] : null;
+	}
 }
