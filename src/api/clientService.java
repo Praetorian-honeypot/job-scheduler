@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -50,7 +52,7 @@ public class clientService{
 	
 
 	@Path("/addclient")
-	@GET
+	@POST
 	@Produces("application/json")
 	public Response addClient(@QueryParam("address") String addr, @QueryParam("port") Integer port) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
@@ -71,7 +73,7 @@ public class clientService{
 	 }
 
 	@Path("/removeclient")
-	@GET
+	@DELETE
 	@Produces("application/json")
 	public Response removeClient(@QueryParam("address") String addr, @QueryParam("port") Integer port) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
@@ -94,10 +96,10 @@ public class clientService{
 	
 	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
 		if(cores != null) 
-			if(client.getCpuCores() != cores)
+			if(client.getCpuCores() < cores)
 				return;
 		if(memory != null)
-			if(client.getTotalMemory() != memory)
+			if(client.getTotalMemory() < memory)
 				return;
 		ArrayList<Object> data = new ArrayList<Object>();
 		data.add(client.getClientAddress());
@@ -106,6 +108,11 @@ public class clientService{
 		data.add(client.getTotalMemory());
 		data.add(client.getOperatingSystem());
 		data.add(client.getHostname());
+		data.add(client.getClientAddress().getPort());
+		data.add(client.getPerformance());
+		data.add(client.getId());
+		data.add(client.getDisplayName());
+		data.add(client.getTime());
 		try {
 			jsonObject.put(Integer.toString(i), data);
 		} catch (JSONException e) {

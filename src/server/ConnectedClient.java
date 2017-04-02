@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -21,8 +22,11 @@ public class ConnectedClient {
 	private int cpuCores;
 	private int totalMemory;
 	private String operatingSystem;
-	private String hostname;	
+	private String hostname;
 	private int performance;
+	private int id;
+	private String displayName;
+	private int time;
 	
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
@@ -36,15 +40,16 @@ public class ConnectedClient {
 		}
 	}
 	
-	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance) {
+	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance, int id, int time) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
 		this.cpuName = cpuName;
 		this.cpuCores = cpuCores;
 		this.operatingSystem = os;
 		this.totalMemory = memory;
-		this.hostname = hostname;
 		this.performance = performance;
+		this.id = id;
+		this.time=time;
 		
 		findExistingClientRecords();
 			
@@ -54,7 +59,7 @@ public class ConnectedClient {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
-	
+
 	private void findExistingClientRecords() {
 		int client;
 		if ((client = server.getDatabase().findClient(clientAddress)) != 0) {
@@ -169,4 +174,28 @@ public class ConnectedClient {
 	public int getPerformance(){
 		return performance;
 	}
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getTime() {
+		return time;
+	}
+
+	public void setTime(int time) {
+		this.time = time;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 }

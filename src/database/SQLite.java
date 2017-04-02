@@ -91,10 +91,10 @@ public class SQLite {
 	}
 	
 	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
-			String displayName, int performance) {
+			String displayName, int performance, int id, int time) {
 		try {
 			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
-			int time = (int) (new Date().getTime() / 1000);
+			
 			stmt.setString(1, client.getAddress().toString());
 			stmt.setString(2, client.getHostName());
 			stmt.setInt(3, client.getPort());
