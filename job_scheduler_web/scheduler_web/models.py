@@ -91,5 +91,7 @@ class JobSchedulingEvent(models.Model):
     schedStatus = models.IntegerField(choices = ((0,'entered'),(1,'scheduled'),
         (2,'running'),(3,'finished'),(4,'failed'),(5,'cancelled'),(6,'killed')))
 
+    server = models.ForeignKey('Server', on_delete = models.SET_NULL, null=True, blank=True)
+
     def __str__(self):
         return "[%s] %s (%s)" % (self.eventDate, self.job.command, self.get_schedStatus_display())

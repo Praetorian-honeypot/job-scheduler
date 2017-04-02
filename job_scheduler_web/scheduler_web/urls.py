@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^serverDetail/(?P<serverID>[0-9]+)/$', views.serverDetail, name='serverDetail'),
     url(r'^serverDetail/(?P<serverID>[0-9]+)/loadMeasurements.csv$', views.loadMeasurementsCSV, name='loadMeasurementsCSV'),
     url(r'^jobs/', views.jobs, name='jobs'),
+    url(r'^jobDetail/(?P<jobID>[0-9]+)/$', views.jobDetail, name='jobDetail'),
 ]

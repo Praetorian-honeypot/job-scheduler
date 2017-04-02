@@ -1,0 +1,36 @@
+{% extends 'scheduler_web/base.html' %}
+{% load staticfiles %}
+{% block content %}
+<h1> {{ job.command }} </h1>
+<table class="table">
+    <tr>    <td><b>Command</b></td><td>{{ job.command }}</td> </tr>
+    <tr>    <td><b>Priority</b></td><td>{{ job.priority }}</td> <tr>
+    <tr>    <td><b>Requested deadline</b></td><td>{{ job.deadline }}</td>  <tr>
+    <tr>    <td><b>Status</b></td><td><b>{{ latestEvent.get_schedStatus_display }}</b></td>  <tr>
+        <tr>
+            <td><b>Server</b></td>
+            <td>{{ latestEvent.server.groupPath }}<b>{{ latestEvent.server.hostname }}</b></td>
+        </tr>
+    <tr>    <td><b>Last Status Update </b></td><td>{{ latestEvent.eventDate }}</td>  <tr>
+    {% if latestEvent.schedStatus > 0 %}
+
+    {% endif %}
+</table>
+
+<h3> Scheduling events </h3>
+<table class="table">
+    <tr>
+        <td><b>Date<b/></td>
+        <td><b>Status</b></td>
+        <td><b>Server</b></td>
+    </tr>
+    {% for ev in schedEvents %}
+    <tr>
+        <td> {{ ev.eventDate }} </td>
+        <td> {{ ev.get_schedStatus_display }} </td>
+        <td> {{ ev.server.groupPath }}<b>{{ ev.server.hostname }}</b> </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

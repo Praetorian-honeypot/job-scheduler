@@ -48,7 +48,7 @@ public class clientService{
 		} else {
 			getClient(server.getClient(clientaddr), 0, jsonObject, cores, memory);
 		}
-		String result = "@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString(); //"@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	}
 	
