@@ -152,7 +152,7 @@ public class SQLite {
 		}
 	}
 	
-	public void addJob(String command, int priority, int deadline) {
+	public int addJob(String command, int priority, int deadline) {
 		try {
 			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobs (command, priority, deadline) VALUES (?,?,?)");
 			stmt.setString(1, command);
@@ -171,6 +171,7 @@ public class SQLite {
 	    			stmt2.setInt(3, schedStatus);
 	    			stmt2.executeUpdate();
 	    			server.log("Succesfully added job with id: " + jobId);
+	    			return jobId;
 	            }
 	            else {
 	                throw new SQLException("Creating job failed, no ID obtained.");
@@ -179,6 +180,7 @@ public class SQLite {
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+		return Integer.MAX_VALUE;
 	}
 	
 	public Job getJob(int jobId) {

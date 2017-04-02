@@ -94,13 +94,6 @@ public class clientService{
 		String result = "@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 }
-	
-	@Path("/{name}")
-	@POST
-	@Consumes("application/x-www-form-urlencoded")
-	public void post(@FormParam("name") String name) {
-	    System.out.println(name);
-	}
 
 	
 	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
