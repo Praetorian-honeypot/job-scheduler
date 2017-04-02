@@ -106,7 +106,7 @@ public class SQLite {
 			stmt.setInt(9, performance);
 			stmt.setInt(10, time);
 			stmt.executeUpdate();
-			server.log("Succesfully added client");
+			server.log("Succesfully added client with specs");
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
@@ -158,22 +158,56 @@ public class SQLite {
 			stmt.setInt(3, deadline);
 			stmt.executeUpdate();
 			
-			PreparedStatement stmt2 = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
-			int jobId = stmt.getGeneratedKeys().getInt("id");
-			int schedStatus = JobSchedulingEvent.getStatusCode("entered");
-			int time = (int) (new Date().getTime() / 1000);
-			stmt2.setInt(1, jobId);
-			stmt2.setInt(2, time);
-			stmt2.setInt(3, schedStatus);
-			stmt2.executeUpdate();
-			server.log("Succesfully added job");
+			try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+	            if (generatedKeys.next()) {
+	            	PreparedStatement stmt2 = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
+	    			int jobId = stmt.getGeneratedKeys().getInt(1);
+	    			int schedStatus = JobSchedulingEvent.getStatusCode("entered");
+	    			int time = (int) (new Date().getTime() / 1000);
+	    			stmt2.setInt(1, jobId);
+	    			stmt2.setInt(2, time);
+	    			stmt2.setInt(3, schedStatus);
+	    			stmt2.executeUpdate();
+	    			server.log("Succesfully added job with id: " + jobId);
+	            }
+	            else {
+	                throw new SQLException("Creating job failed, no ID obtained.");
+	            }
+	        }
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
 	
+	public Job findJob(int jobId) {
+		Job job = null;
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobs WHERE id = ?");
+			stmt.setInt(1, jobId);
+			ResultSet found = stmt.executeQuery();
+			if (found.next())
+				job = new Job(found.getInt("id"), found.getString("command"), found.getInt("priority"), found.getInt("deadline"));
+			else
+				server.log("Cannot find job with id: " + jobId);
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return job;
+	}
+	
 	public void setJobStatus(int jobId, int schedStatus) {
-		try {			
+		Job job = findJob(jobId);
+		
+		if (job == null) {
+			return;
+		}
+		
+		if (JobSchedulingEvent.getStatus(schedStatus) == null) {
+			server.log("ERROR: this is an invalid scheduling status");
+			return;
+		}			
+		
+		try {
 			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
 			int time = (int) (new Date().getTime() / 1000);
 			stmt.setInt(1, jobId);
@@ -191,20 +225,25 @@ public class SQLite {
 		setJobStatus(jobId, statusId);
 	}
 	
-	public Job findJob(String table, String whereStatement) {
-		Job job = null;
+	public int getJobStatus(int jobId) {
+		int status = -1;
 		try {
-			Statement stmt = c.createStatement();
-			String sql = "SELECT * FROM " + table + " WHERE " + whereStatement;
-			ResultSet found = stmt.executeQuery(sql);
+			PreparedStatement stmt = c.prepareStatement("SELECT jse.schedStatus FROM jobSchedulingEvents AS jse "
+					+ "INNER JOIN (SELECT jse2.id, max(eventDate) FROM jobSchedulingEvents AS jse2 WHERE job = ?) AS jse2 "
+					+ "ON jse.id = jse2.id "
+					+ "WHERE job = ?");
+			stmt.setInt(1, jobId);
+			stmt.setInt(2, jobId);
+			ResultSet found = stmt.executeQuery();
 			if (found.next())
-				job = new Job(found.getInt("id"), found.getString("command"), found.getInt("priority"), found.getInt("deadline"));
+				status = found.getInt("schedStatus");
+			else
+				server.log("Cannot find scheduling event status of job with id: " + jobId);
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
-		return job;
+		return status;
 	}
-	
 	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
 			int performance) {
 		int clientId = findClient(client);

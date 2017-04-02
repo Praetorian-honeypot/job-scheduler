@@ -11,11 +11,14 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.text.DefaultCaret;
+
+import jobs.JobSchedulingEvent;
 
 public class ServerView extends javax.swing.JFrame implements Observer {
 	private static final long serialVersionUID = -5346255320116138428L;
@@ -99,6 +102,40 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		lblAddress.setBounds(10, 46, 195, 32);
 		panel.add(lblAddress);
 		lblAddress.setFont(new Font("Tahoma", Font.BOLD, 11));
+		
+		JButton btnNewJob = new JButton("New job");
+		btnNewJob.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String command = JOptionPane.showInputDialog(panel, "Enter the command", null);
+				int priority = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the priority of the job", null));
+				int deadline = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the deadline as an integer", null));
+				server.getDatabase().addJob(command, priority, deadline);
+			}
+		});
+		btnNewJob.setBounds(0, 174, 215, 23);
+		panel.add(btnNewJob);
+		
+		JButton btnGetJobStatus = new JButton("Get job status");
+		btnGetJobStatus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int jobId = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the job id", null));
+				int status = server.getDatabase().getJobStatus(jobId);
+				server.log("The database returned the following status: " + JobSchedulingEvent.getStatus(status));
+			}
+		});
+		btnGetJobStatus.setBounds(0, 208, 215, 23);
+		panel.add(btnGetJobStatus);
+		
+		JButton btnSetJobStatus = new JButton("Set job status");
+		btnSetJobStatus.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int jobId = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the job id", null));
+				int status = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the new job status", null));
+				server.getDatabase().setJobStatus(jobId, status);
+			}
+		});
+		btnSetJobStatus.setBounds(0, 242, 215, 23);
+		panel.add(btnSetJobStatus);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(221, 5, 458, 452);
