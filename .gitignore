@@ -1,6 +1,7 @@
 /bin/
 /target/
 *.db
+server.txt
 # Django Recommended
 *.egg-info
 *.pot

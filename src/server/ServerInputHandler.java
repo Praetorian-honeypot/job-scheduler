@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
@@ -24,13 +26,23 @@ public class ServerInputHandler implements Runnable {
 	Thread runner;
 	private volatile boolean running = true;
 	private Channel channel;
-	private static final String BROKER = "asa";
+	private static final String BROKER = readFile("server.txt");
 	private Consumer reportConsumer;
 	
 	public ServerInputHandler(Server server) {
 		this.server = server;
 	}
 	
+	private static String readFile(String path) {
+		byte[] encoded = null;
+		try {
+			encoded = Files.readAllBytes(Paths.get(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new String(encoded);
+	}
+
 	public void start() {
 		ConnectionFactory factory = new ConnectionFactory();
 	    factory.setHost(BROKER);

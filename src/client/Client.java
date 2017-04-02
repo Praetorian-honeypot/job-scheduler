@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ public class Client extends Observable implements Runnable {
 	private Socket serverSocket = null;
 	private static List<String> clientLogger = new ArrayList<String>();
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	public static final String BROKER = "asa";
+	public static final String BROKER = readFile("server.txt");
 	private Channel channel;
 	
 	
@@ -63,6 +65,16 @@ public class Client extends Observable implements Runnable {
 			}
         	
         });
+	}
+	
+	private static String readFile(String path) {
+		byte[] encoded = null;
+		try {
+			encoded = Files.readAllBytes(Paths.get(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new String(encoded);
 	}
 	
 	@Override
