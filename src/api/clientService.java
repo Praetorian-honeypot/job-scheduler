@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
@@ -19,9 +20,9 @@ import org.json.JSONObject;
 import server.ConnectedClient;
 import server.Server;
 
-@Path("/getclientservice")
-public class getClientService{
-	private transient static final Logger logger = Logger.getLogger( getClientService.class.getName() );
+@Path("/clientservice")
+public class clientService{
+	private transient static final Logger logger = Logger.getLogger( clientService.class.getName() );
 	@Context
     Configuration config;
 
@@ -46,6 +47,50 @@ public class getClientService{
 		String result = "@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	}
+	
+
+	@Path("/addclient")
+	@GET
+	@Produces("application/json")
+	public Response addClient(@QueryParam("address") String addr, @QueryParam("port") Integer port) throws JSONException {
+		JSONObject jsonObject = new JSONObject();
+		Server server = (Server) config.getProperty("server");
+		InetSocketAddress clientaddr = new InetSocketAddress(addr, port);
+		if(server.clientExists(clientaddr)) {
+			jsonObject.put("result", "Client with address " + clientaddr + " already exists");
+		} else { 
+			server.addClient(clientaddr);
+			if(server.clientExists(clientaddr)) {
+				jsonObject.put("result", "addition succesful");
+			} else { 
+				jsonObject.put("result", "addition failed");
+			}
+		}
+		String result = "@Produces(\"application/json\") Output: \n\nAdd Client Output: \n\n" + jsonObject;
+		return Response.status(200).entity(result).build();
+	 }
+
+	@Path("/removeclient")
+	@GET
+	@Produces("application/json")
+	public Response removeClient(@QueryParam("address") String addr, @QueryParam("port") Integer port) throws JSONException {
+		JSONObject jsonObject = new JSONObject();
+		Server server = (Server) config.getProperty("server");
+		InetSocketAddress clientaddr = new InetSocketAddress(addr, port);
+		if(!server.clientExists(clientaddr)) {
+			jsonObject.put("result", "Client with address " + clientaddr + " doesn't exist");
+		} else { 
+			server.removeClient(clientaddr);
+			if(!server.clientExists(clientaddr)) {
+				jsonObject.put("result", "deletion succesful");
+			} else { 
+				jsonObject.put("result", "deletion failed");
+			}
+		}
+		String result = "@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
+		return Response.status(200).entity(result).build();
+	 }
+
 	
 	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
 		if(cores != null) 
