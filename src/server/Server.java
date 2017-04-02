@@ -175,10 +175,11 @@ public class Server extends Observable implements Runnable {
     				+ ":" + client.getClientAddress().getPort();
         	
         	ClientReport report = client.getLatestReport();
+        	final String DEGREE  = "\u00b0";
         	if (report != null)
         		messageText += " (CPU:" + Math.round(report.getCpuLoad() * 100) + "%, "
         				+ " MEM:" + Math.round(report.getMemAvailable() / Math.pow(10,6)) + "MB, "
-        				+ " TEMP:" + Math.round(report.getCpuTemp()) + "�C)";
+        				+ " TEMP:" + Math.round(report.getCpuTemp()) + DEGREE +"C)";
         	
         	messageText += "\n";
         	i++;
