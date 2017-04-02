@@ -68,7 +68,7 @@ public class SQLite {
 	}
 	
 	public int findClient(InetSocketAddress client) {
-		return findSingle("clients", "address = '" + client.getAddress() + "' AND port = " + client.getPort());
+		return findSingle("clients", "address = '" + client.getAddress() + "' AND hostport = " + client.getPort());
 	}
 	
 	public void addClient(InetSocketAddress client) {
@@ -89,7 +89,7 @@ public class SQLite {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, port, cpuName, cpuCores, memory, performance, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, memoryAmount, performance, createDate) " +
 						 "VALUES ('" + client.getAddress() + "', '" + 
 						 				client.getHostName()+"', " + 
 						 				client.getPort()+ ", '" + 
@@ -162,7 +162,7 @@ public class SQLite {
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
 	                   " hostport       INTEGER NOT NULL, " + 
-	                   " displayName    TEXT NOT NULL, " + 
+	                   " displayName    TEXT, " + 
 	                   " clientGroup    INTEGER, " + 
 	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
