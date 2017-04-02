@@ -179,7 +179,7 @@ public class SQLite {
 		}
 	}
 	
-	public Job findJob(int jobId) {
+	public Job getJob(int jobId) {
 		Job job = null;
 		try {
 			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobs WHERE id = ?");
@@ -195,8 +195,22 @@ public class SQLite {
 		return job;
 	}
 	
+	public ArrayList<Job> getAllJobs() {
+		ArrayList<Job> jobs = new ArrayList<Job>();
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobs");
+			ResultSet result = stmt.executeQuery();
+			while (result.next()) {
+				jobs.add(new Job(result.getInt("id"), result.getString("command"), result.getInt("priority"), result.getInt("deadline")));
+			}
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return jobs;
+	}
+	
 	public void setJobStatus(int jobId, int schedStatus) {
-		Job job = findJob(jobId);
+		Job job = getJob(jobId);
 		
 		if (job == null) {
 			return;
@@ -244,6 +258,41 @@ public class SQLite {
 		}
 		return status;
 	}
+	
+	public JobSchedulingEvent getJobSchedulingEvent(int jobId) {
+		JobSchedulingEvent event = null;
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT jse.* FROM jobSchedulingEvents AS jse "
+					+ "INNER JOIN (SELECT jse2.id, max(eventDate) FROM jobSchedulingEvents AS jse2 WHERE job = ?) AS jse2 "
+					+ "ON jse.id = jse2.id "
+					+ "WHERE job = ?");
+			stmt.setInt(1, jobId);
+			stmt.setInt(2, jobId);
+			ResultSet found = stmt.executeQuery();
+			if (found.next())
+				event = new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus"));
+			else
+				server.log("Cannot find scheduling event of job with id: " + jobId);
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return event;
+	}
+	
+	public ArrayList<JobSchedulingEvent> getAllJobSchedulingEvents(int jobId) {
+		ArrayList<JobSchedulingEvent> events = new ArrayList<JobSchedulingEvent>();
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobSchedulingEvents WHERE job = ?");
+			stmt.setInt(1, jobId);
+			ResultSet found = stmt.executeQuery();
+			while (found.next())
+				events.add(new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus")));
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return events;
+	}
+	
 	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
 			int performance) {
 		int clientId = findClient(client);
