@@ -209,7 +209,7 @@ public class SQLite {
 		return jobs;
 	}
 	
-	public void setJobStatus(int jobId, int schedStatus) {
+	public void setJobStatus(int jobId, int schedStatus, int clientId) {
 		Job job = getJob(jobId);
 		
 		if (job == null) {
@@ -222,11 +222,12 @@ public class SQLite {
 		}			
 		
 		try {
-			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus, client) VALUES (?,?,?,?)"); 
 			int time = (int) (new Date().getTime() / 1000);
 			stmt.setInt(1, jobId);
 			stmt.setInt(2, time);
 			stmt.setInt(3, schedStatus);
+			stmt.setInt(4, clientId);
 			stmt.executeUpdate();
 			server.log("Succesfully modified job status to: " + JobSchedulingEvent.getStatus(schedStatus));
 		} catch (Exception exception) {
@@ -234,9 +235,17 @@ public class SQLite {
 		}
 	}
 	
-	public void setJobStatus(int jobId, String schedStatus) {
+	public void setJobStatus(int jobId, String schedStatus, int clientId) {
 		int statusId = JobSchedulingEvent.getStatusCode(schedStatus);
-		setJobStatus(jobId, statusId);
+		setJobStatus(jobId, statusId, clientId);
+	}
+	
+	public void setJobStatus(int jobId, String schedStatus) {
+		setJobStatus(jobId, schedStatus, 0);
+	}
+	
+	public void setJobStatus(int jobId, int schedStatus) {
+		setJobStatus(jobId, schedStatus, 0);
 	}
 	
 	public int getJobStatus(int jobId) {
@@ -270,7 +279,7 @@ public class SQLite {
 			stmt.setInt(2, jobId);
 			ResultSet found = stmt.executeQuery();
 			if (found.next())
-				event = new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus"));
+				event = new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus"), found.getInt("client"));
 			else
 				server.log("Cannot find scheduling event of job with id: " + jobId);
 		} catch (Exception exception) {
@@ -286,7 +295,7 @@ public class SQLite {
 			stmt.setInt(1, jobId);
 			ResultSet found = stmt.executeQuery();
 			while (found.next())
-				events.add(new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus")));
+				events.add(new JobSchedulingEvent(jobId, found.getInt("eventDate"), found.getInt("schedStatus"), found.getInt("client")));
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
@@ -406,6 +415,7 @@ public class SQLite {
 			String sql = "CREATE TABLE jobSchedulingEvents " +
 					"(id INTEGER PRIMARY KEY AUTOINCREMENT," +
 					" job    	 INTEGER NOT NULL, " + 
+					" client  INTEGER, " +
 					" eventDate  INTEGER DEFAULT 0, " +
 					" schedStatus INTEGER DEFAULT 0)"; 
 			stmt.executeUpdate(sql);

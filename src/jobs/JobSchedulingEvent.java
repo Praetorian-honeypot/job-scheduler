@@ -7,11 +7,13 @@ public class JobSchedulingEvent {
 	private int job;
 	private Date eventDate;
 	private int schedStatus;
+	private int client;
 	
-	public JobSchedulingEvent(int job, int eventDate, int schedStatus) {
+	public JobSchedulingEvent(int job, int eventDate, int schedStatus, int client) {
 		this.setJob(job);
 		this.setEventDate(new Date(eventDate * 1000L));
 		this.setSchedStatus(schedStatus);
+		this.setClient(client);
 	}
 	
 	public static int getStatusCode(String searchStatus) {
@@ -50,5 +52,13 @@ public class JobSchedulingEvent {
 
 	public void setSchedStatus(int schedStatus) {
 		this.schedStatus = schedStatus;
+	}
+
+	public int getClient() {
+		return client;
+	}
+
+	public void setClient(int client) {
+		this.client = client;
 	}
 }
