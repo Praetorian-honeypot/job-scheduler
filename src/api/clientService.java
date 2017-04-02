@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -92,6 +94,13 @@ public class clientService{
 		String result = "@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 }
+	
+	@Path("/{name}")
+	@POST
+	@Consumes("application/x-www-form-urlencoded")
+	public void post(@FormParam("name") String name) {
+	    System.out.println(name);
+	}
 
 	
 	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
@@ -102,17 +111,18 @@ public class clientService{
 			if(client.getTotalMemory() < memory)
 				return;
 		ArrayList<Object> data = new ArrayList<Object>();
+		data.add(client.getId());
 		data.add(client.getClientAddress());
 		data.add(client.getCpuName());
 		data.add(client.getCpuCores());
 		data.add(client.getTotalMemory());
 		data.add(client.getOperatingSystem());
-		data.add(client.getHostname());
+		data.add(client.getClientAddress().getHostName());
 		data.add(client.getClientAddress().getPort());
 		data.add(client.getPerformance());
-		data.add(client.getId());
 		data.add(client.getDisplayName());
 		data.add(client.getTime());
+		
 		try {
 			jsonObject.put(Integer.toString(i), data);
 		} catch (JSONException e) {

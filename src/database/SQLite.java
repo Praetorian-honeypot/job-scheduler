@@ -90,27 +90,29 @@ public class SQLite {
 		}
 	}
 	
-	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
-			String displayName, int performance, int id, int time) {
+	public int addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
+			String displayName, int performance, int time) {
 		try {
-			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
-			
-			stmt.setString(1, client.getAddress().toString());
-			stmt.setString(2, client.getHostName());
-			stmt.setInt(3, client.getPort());
-			stmt.setString(4, cpuName);
-			stmt.setInt(5, cpuCores);
-			stmt.setString(6, os);
-			stmt.setInt(7, memory);
-			stmt.setString(8, displayName);
-			stmt.setInt(9, performance);
-			stmt.setInt(10, time);
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (client, address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+			int clientId = stmt.getGeneratedKeys().getInt(1);
+			stmt.setInt(1, clientId);
+			stmt.setString(2, client.getAddress().toString());
+			stmt.setString(3, client.getHostName());
+			stmt.setInt(4, client.getPort());
+			stmt.setString(5, cpuName);
+			stmt.setInt(6, cpuCores);
+			stmt.setString(7, os);
+			stmt.setInt(8, memory);
+			stmt.setString(9, displayName);
+			stmt.setInt(10, performance);
+			stmt.setInt(11, time);
 			stmt.executeUpdate();
 			server.log("Succesfully added client with specs");
+			return clientId;
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
-		
+		return 0;
 	}
 	
 	public Collection<? extends ClientReport> getClientReports(int clientId, InetSocketAddress clientAddress) {
@@ -341,6 +343,7 @@ public class SQLite {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE clients " +
 	                   "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+	                   " client         INTEGER NOT NULL, " +
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
 	                   " hostport       INTEGER NOT NULL, " + 

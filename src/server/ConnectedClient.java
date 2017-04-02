@@ -6,11 +6,12 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import oshi.SystemInfo;
 
 public class ConnectedClient {
 	private Server server;
@@ -25,7 +26,6 @@ public class ConnectedClient {
 	private String hostname;
 	private int performance;
 	private int id;
-	private String displayName;
 	private int time;
 	
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
@@ -40,7 +40,7 @@ public class ConnectedClient {
 		}
 	}
 	
-	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance, int id, int time) {
+	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance, int time, int id) {
 		this.server = server;
 		this.setClientAddress(clientAddress);
 		this.cpuName = cpuName;
@@ -191,11 +191,8 @@ public class ConnectedClient {
 	}
 
 	public String getDisplayName() {
-		return displayName;
-	}
-
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		SystemInfo sysInfo = new SystemInfo();
+		return sysInfo.getOperatingSystem().getNetworkParams().getHostName();
 	}
 
 }
