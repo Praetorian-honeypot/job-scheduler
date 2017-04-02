@@ -7,13 +7,13 @@
     <tr>
         <th>Command</th>
         <th>Priority</th>
-        <th>Date entered</th>
+        <th>Last updated</th>
     </tr>
     {% for job in job_list %}
     <tr>
-        <td>{{ job.command }}</td>
+        <td><a href='{% url 'jobDetail' job.pk %}'>{{ job.command }}</a></td>
         <td>{{ job.priority }}</td>
-        <td>{{ job.enteredDate }}</td>
+        <td>{{ job.schedStatus.eventDate }}</td>
     </tr>
     {% endfor %}
 </table>

@@ -7,7 +7,7 @@ from time import strftime
 
 import csv
 
-from .models import Server, Job, LoadMeasurement
+from .models import Server, Job, LoadMeasurement, JobSchedulingEvent
 from .forms import AddServerForm, AddJobForm
 
 import rest
@@ -23,6 +23,8 @@ def index(request):
     return HttpResponse(template.render(context,request))
 
 def servers(request):
+    fetchServers()
+
     server_list = Server.objects.order_by('hostname')
     context = {'server_list': server_list}
     template = loader.get_template('scheduler_web/servers.html')
@@ -44,6 +46,20 @@ def jobs(request):
     job_list = Job.objects.order_by('-priority')
     context = {'job_list': job_list}
     template = loader.get_template('scheduler_web/jobs.html')
+    return HttpResponse(template.render(context,request))
+
+def jobDetail(request, jobID):
+    job = Job.objects.get(pk=jobID)
+    schedEvents = JobSchedulingEvent.objects.filter(job=job)
+    latestEvent = schedEvents.order_by('-eventDate').first()
+
+    context = {
+        'job':job,
+        'latestEvent':latestEvent,
+        'schedEvents':schedEvents,
+    }
+
+    template = loader.get_template('scheduler_web/jobDetail.html')
     return HttpResponse(template.render(context,request))
 
 def addServer(request):
@@ -90,3 +106,35 @@ def loadMeasurementsCSV(request,serverID):
         writer.writerow([meas.date.strftime("%Y-%m-%d %H:%M"),meas.cpuLoad,meas.memoryLoad])
 
     return response
+
+def fetchAPI():
+    fetchJobs()
+    fetchServers()
+
+def fetchJobs():
+    #Job.objects.all().delete()
+    #
+    #r = requests.get("http://192.168.0.25:11111/api/clientservice")
+    #
+    #json = r.json()
+
+def fetchServers():
+    Server.objects.all().delete()
+
+    r = requests.get("http://192.168.0.25:11111/api/clientservice")
+
+    json = r.json()
+
+    i = 0
+    while(True):
+        try:
+            server = Server(hostname = json[str(i)][0].split(":")[0],
+                    hostport = json[str(i)][0].split(":")[1],
+                    displayName = json[str(i)][5],
+                    cpuName = json[str(i)][1],
+                    cpuCores = json[str(i)][2],
+                    memoryAmount = json[str(i)][3])
+            server.save()
+            i += 1
+        except:
+            pass
