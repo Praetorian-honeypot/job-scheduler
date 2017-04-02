@@ -3,6 +3,7 @@ package database;
 import java.net.InetSocketAddress;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -11,6 +12,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 
+import jobs.JobSchedulingEvent;
 import server.ClientReport;
 import server.Server;
 
@@ -23,6 +25,7 @@ public class SQLite {
 		try {
 			Class.forName("org.sqlite.JDBC");
 			c = DriverManager.getConnection("jdbc:sqlite:server.db");
+			c.setAutoCommit(true);
 			server.log("Opened database succesfully");
 			
 			if (!tableExists("clients"))
@@ -73,11 +76,13 @@ public class SQLite {
 	
 	public void addClient(InetSocketAddress client) {
 		try {
-			Statement stmt = c.createStatement();
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (address, hostname, hostport, createDate) VALUES (?,?,?,?)");
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, hostport, createDate) " +
-						 "VALUES ('"+client.getAddress()+"', '"+client.getHostName()+"', "+client.getPort()+", "+time+");";
-			stmt.executeUpdate(sql);
+			stmt.setString(1, client.getAddress().toString());
+			stmt.setString(2, client.getHostName());
+			stmt.setInt(3, client.getPort());
+			stmt.setInt(4, time);
+			stmt.executeUpdate();
 			server.log("Succesfully added client");
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
@@ -87,20 +92,19 @@ public class SQLite {
 	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
 			String displayName, int performance) {
 		try {
-			Statement stmt = c.createStatement();
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) " +
-						 "VALUES ('" + client.getAddress() + "', '" + 
-						 				client.getHostName()+"', " + 
-						 				client.getPort()+ ", '" + 
-						 				cpuName + "', " +
-						 				cpuCores + ", '" +
-						 				os + "', " +
-						 				memory + ", '" +
-						 				displayName + "', " +
-						 				performance + ", " +
-						 				time+ ");";
-			stmt.executeUpdate(sql);
+			stmt.setString(1, client.getAddress().toString());
+			stmt.setString(2, client.getHostName());
+			stmt.setInt(3, client.getPort());
+			stmt.setString(4, cpuName);
+			stmt.setInt(5, cpuCores);
+			stmt.setString(6, os);
+			stmt.setInt(7, memory);
+			stmt.setString(8, displayName);
+			stmt.setInt(9, performance);
+			stmt.setInt(10, time);
+			stmt.executeUpdate();
 			server.log("Succesfully added client");
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
@@ -131,23 +135,68 @@ public class SQLite {
 	public void addReport(ClientReport report) {
 		int clientId = findClient(report.getClientAddress());
 		try {
-			Statement stmt = c.createStatement();
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO clientReports (client,date,cpuLoad,memAvailable,cpuTemp) VALUES (?,?,?,?,?)");
 			int time = (int) (report.getCreateDate().getTime() / 1000);
-			String sql = "INSERT INTO clientReports (client,date,cpuLoad,memAvailable,cpuTemp) " +
-						 "VALUES ("+clientId+", "+time+", "+report.getCpuLoad()+", "+report.getMemAvailable()+", "+report.getCpuTemp()+");";
-			stmt.executeUpdate(sql);
+			stmt.setInt(1, clientId);
+			stmt.setInt(2, time);
+			stmt.setDouble(3, report.getCpuLoad());
+			stmt.setDouble(4, report.getMemAvailable());
+			stmt.setDouble(5, report.getCpuTemp());
+			stmt.executeUpdate();
 			server.log("Succesfully saved client report");
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
+	
+	public void addJob(String command, int priority, int deadline) {
+		try {
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobs (command, priority, deadline) VALUES (?,?,?)");
+			stmt.setString(1, command);
+			stmt.setInt(2, priority);
+			stmt.setInt(3, deadline);
+			stmt.executeUpdate();
+			
+			PreparedStatement stmt2 = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
+			int jobId = stmt.getGeneratedKeys().getInt("id");
+			int schedStatus = JobSchedulingEvent.getStatusCode("entered");
+			int time = (int) (new Date().getTime() / 1000);
+			stmt2.setInt(1, jobId);
+			stmt2.setInt(2, time);
+			stmt2.setInt(3, schedStatus);
+			stmt2.executeUpdate();
+			server.log("Succesfully added job");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+	}
+	
+	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
+			int performance) {
+		int clientId = findClient(client);
+		try {
+			PreparedStatement stmt = c.prepareStatement("UPDATE clients (cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance) SET (?,?,?,?,?,?) WHERE id = ?");
+			stmt.setString(1, cpuName);
+			stmt.setInt(2, cpuCores);
+			stmt.setString(3, operatingSystem);
+			stmt.setInt(4, memoryAmount);
+			stmt.setString(5, displayName);
+			stmt.setInt(6, performance);
+			stmt.setInt(7, clientId);
+			stmt.executeUpdate();
+			server.log("Succesfully saved client report");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
+	}
 
 	private boolean tableExists(String table) {
 		boolean tableExists = false;
 		try {
-			Statement stmt = c.createStatement();
-			String sql = "SELECT * FROM sqlite_master WHERE name ='" + table + "' and type='table'; ";
-			ResultSet rs = stmt.executeQuery(sql);
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM sqlite_master WHERE name = ? and type='table'");
+			stmt.setString(1, table);
+			ResultSet rs = stmt.executeQuery();
 			tableExists = rs.next();
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
@@ -244,22 +293,5 @@ public class SQLite {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
 	}
-
-	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
-			int performance) {
-		int clientId = findClient(client);
-		try {
-			Statement stmt = c.createStatement();
-			String sql = "UPDATE clients (cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance) " +
-						 "SET ('"+cpuName+"', "+cpuCores+", '"+operatingSystem+"', "+memoryAmount+", '"+displayName+"', "+performance+") " +
-						 "WHERE id = " + clientId;
-			stmt.executeUpdate(sql);
-			server.log("Succesfully saved client report");
-		} catch (Exception exception) {
-			server.log( Level.SEVERE, exception.toString(), exception );
-		}
-		
-	}
-
 }
 
