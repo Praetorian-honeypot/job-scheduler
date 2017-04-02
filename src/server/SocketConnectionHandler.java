@@ -77,12 +77,12 @@ public class SocketConnectionHandler implements Runnable {
 				case "connect":
 					String cpuName = json.getString("cpuName");
 					int cpuCores = Integer.parseInt(json.getString("cpuCores"));
-					int memory = Integer.parseInt(json.getString("totalMemory"));
-					String os = json.getString("operatingSystem");
-					String hostname = json.getString("hostname");
+					int memoryAmount = Integer.parseInt(json.getString("memoryAmount"));
+					String operatingSystem = json.getString("operatingSystem");
+					String displayName = json.getString("displayName");
 					int performance = Integer.parseInt(json.getString("performance"));
 					
-					server.addClient(client, cpuName, cpuCores, os, memory, hostname, performance);
+					server.addClient(client, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance);
 					break;
 				case "disconnect":
 					server.removeClient(client);

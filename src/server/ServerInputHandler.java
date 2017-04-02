@@ -134,11 +134,11 @@ public class ServerInputHandler implements Runnable {
 					String cpuName = json.getString("cpuName");
 					int cpuCores = Integer.parseInt(json.getString("cpuCores"));
 					String operatingSystem = json.getString("operatingSystem");
-					int totalMemory = Integer.parseInt(json.getString("totalMemory"));
+					int memoryAmount = Integer.parseInt(json.getString("memoryAmount"));
 					String hostname = json.getString("hostname");
 					int performance = json.getInt("performance");
 					
-					//TODO: store in DB or something.
+					server.getDatabase().setSpecs(connectedClient.getClientAddress(), cpuName, cpuCores, operatingSystem, memoryAmount, hostname, performance);
 					server.log("Received hardware specifications from client on " + clientAddress);
 					break;
 				default:

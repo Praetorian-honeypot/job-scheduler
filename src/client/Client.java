@@ -212,12 +212,12 @@ public class Client extends Observable implements Runnable {
 					" " + sysInfo.getOperatingSystem().getFamily() +
 					" " + sysInfo.getOperatingSystem().getVersion();
 			long totalMemory = hw.getMemory().getTotal() / (1024*1024);
-			String hostname = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
+			String displayName = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
 			specData.put("cpuName", cpuName);
 			specData.put("cpuCores", cpuCores);
 			specData.put("operatingSystem", operatingSystem);
-			specData.put("totalMemory",totalMemory);
-			specData.put("hostname", hostname);
+			specData.put("memoryAmount",totalMemory);
+			specData.put("displayName", displayName);
 			specData.put("performance", benchmark());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );

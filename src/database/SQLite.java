@@ -85,17 +85,19 @@ public class SQLite {
 	}
 	
 	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
-			String hostname, int performance) {
+			String displayName, int performance) {
 		try {
 			Statement stmt = c.createStatement();
 			int time = (int) (new Date().getTime() / 1000);
-			String sql = "INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, memoryAmount, performance, createDate) " +
+			String sql = "INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) " +
 						 "VALUES ('" + client.getAddress() + "', '" + 
 						 				client.getHostName()+"', " + 
 						 				client.getPort()+ ", '" + 
 						 				cpuName + "', " +
-						 				cpuCores + ", " +
-						 				memory + ", " +
+						 				cpuCores + ", '" +
+						 				os + "', " +
+						 				memory + ", '" +
+						 				displayName + "', " +
 						 				performance + ", " +
 						 				time+ ");";
 			stmt.executeUpdate(sql);
@@ -166,6 +168,7 @@ public class SQLite {
 	                   " clientGroup    INTEGER, " + 
 	                   " cpuName        TEXT, " + 
 	                   " cpuCores       INTEGER DEFAULT 0, " + 
+	                   " operatingSystem TEXT, " + 
 	                   " memoryAmount   INTEGER DEFAULT 0, " + 
 	                   " performance    INTEGER DEFAULT 0, " + 
 	                   " createDate     INTEGER)"; 
@@ -240,6 +243,22 @@ public class SQLite {
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+
+	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
+			int performance) {
+		int clientId = findClient(client);
+		try {
+			Statement stmt = c.createStatement();
+			String sql = "UPDATE clients (cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance) " +
+						 "SET ('"+cpuName+"', "+cpuCores+", '"+operatingSystem+"', "+memoryAmount+", '"+displayName+"', "+performance+") " +
+						 "WHERE id = " + clientId;
+			stmt.executeUpdate(sql);
+			server.log("Succesfully saved client report");
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		
 	}
 
 }

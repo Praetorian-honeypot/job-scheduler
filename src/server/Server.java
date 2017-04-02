@@ -59,7 +59,7 @@ public class Server extends Observable implements Runnable {
 		serverInputHandler = new ServerInputHandler(this);
 		serverInputHandler.start();
 		this.setDatabase(new SQLite(this));
-		RestAPI rest = new RestAPI(this, API_URI);
+		new RestAPI(this, API_URI);
 		logger.log(Level.FINE, "Server is initiated");
 	}
 	
