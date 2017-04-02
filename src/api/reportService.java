@@ -2,11 +2,22 @@ package api;
 
 
 import java.net.InetSocketAddress;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -20,56 +31,63 @@ import server.Server;
 
 @Path("/reportservice")
 public class reportService{
+	private transient static final Logger logger = Logger.getLogger( reportService.class.getName() );
 	@Context
     Configuration config;
 	
 	@GET
 	@Produces("application/json")
-	public Response getReports() throws JSONException {
+	public Response getReport(	@QueryParam("address") String addr, @QueryParam("port") Integer port,
+								@QueryParam("date1") String date1, @QueryParam("date2") String date2, 
+								@QueryParam("load1") Integer load1, @QueryParam("load2") Integer load2) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
-		ArrayList<ConnectedClient> clients = server.getClients();
+		port = (port == null) ? 0 : port;
+		addr = (addr == null) ? "" : addr;
+		InetSocketAddress clientaddr = new InetSocketAddress(addr, port);
 		int j=0;
-		for(ConnectedClient c: clients) {
-			addReports(c, j, jsonObject);
+		DateFormat formatter = new SimpleDateFormat("yyyy/MM/ddHH:mm:ss");
+		try {
+			Date startDate = (date1 == null) ? null : formatter.parse(date1);
+			Date endDate = (date2 == null) ? null : formatter.parse(date2);
+			ArrayList<ConnectedClient> clients = server.getClients();
+			if(!server.clientExists(clientaddr)) {
+				for(ConnectedClient c: clients) {
+					addReports(c, j, jsonObject, startDate, endDate, load1, load2);
+				}
+			} else {
+				addReports(server.getClient(clientaddr), j, jsonObject, startDate, endDate, load1, load2);
+			}
+			
+		} catch (ParseException e) {
+			logger.log( Level.SEVERE, e.toString(), e );
 		}
-		jsonObject.put("test", "test");
-		String result = "@Produces(\"application/json\") Output: \n\nReportService Output: \n\n" + jsonObject;
-		return Response.status(200).entity(result).build();
-	 }
-	
-	@Path("{client}")
-	@GET
-	@Produces("application/json")
-	public Response getReport(@PathParam("client") String client) throws JSONException {
-		JSONObject jsonObject = new JSONObject();
-		Server server = (Server) config.getProperty("server");
-		String[] split = client.split("-");
-		InetSocketAddress clientaddr = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
-		int j=0;
-		addReports(server.getClient(clientaddr), j, jsonObject);
+
 		
 		String result = "@Produces(\"application/json\") Output: \n\nReportService Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 } 
 	
-	private void addReports(ConnectedClient c, int j, JSONObject jsonObject) {
+	private void addReports(ConnectedClient c, int j, JSONObject jsonObject, Date startDate, Date endDate, Integer load1, Integer load2) {
 		ArrayList<ClientReport> reports = c.getReports();
 		
 		for (int i=0; i<reports.size(); i++) {
+			if(startDate!= null && endDate!=null) 
+				if (reports.get(i).getCreateDate().before(startDate) || reports.get(i).getCreateDate().after(endDate)) 
+					continue;
+			if(load1!= null && load2!= null) 
+				if(reports.get(i).getCpuLoad() < load1 || reports.get(i).getCpuLoad() > load2) 
+					continue;
 			ArrayList<Object> data = new ArrayList<Object>();
 			data.add(reports.get(i).getClientAddress());
 			data.add(reports.get(i).getCpuLoad());
-			System.out.println(reports.get(i).getCpuLoad());
-			System.out.println(reports.get(i).getCpuTemp());
 			data.add(reports.get(i).getMemAvailable());
 			data.add(reports.get(i).getCpuTemp());
 			data.add(reports.get(i).getCreateDate());
 			try {
 				jsonObject.put(Integer.toString(j), data);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.log( Level.SEVERE, e.toString(), e );
 			}
 			j++;
 		}

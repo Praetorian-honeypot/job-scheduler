@@ -201,7 +201,6 @@ public class Client extends Observable implements Runnable {
 					" " + sysInfo.getOperatingSystem().getVersion();
 			long totalMemory = hw.getMemory().getTotal() / (1024*1024);
 			String hostname = sysInfo.getOperatingSystem().getNetworkParams().getHostName();
-			
 			specData.put("cpuName", cpuName);
 			specData.put("cpuCores", cpuCores);
 			specData.put("operatingSystem", operatingSystem);

@@ -2,11 +2,13 @@ package api;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -19,39 +21,39 @@ import server.Server;
 
 @Path("/getclientservice")
 public class getClientService{
+	private transient static final Logger logger = Logger.getLogger( getClientService.class.getName() );
 	@Context
     Configuration config;
+
 	@GET
 	@Produces("application/json")
-	public Response getClients() throws JSONException {
+	public Response getClient(	@QueryParam("address") String addr, @QueryParam("port") Integer port,
+								@QueryParam("cores") Integer cores, @QueryParam("memory") Integer memory) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
+		port = (port == null) ? 0 : port;
+		addr = (addr == null) ? "" : addr;
+		InetSocketAddress clientaddr = new InetSocketAddress(addr, port);
+		System.out.println(clientaddr);
 		ArrayList<ConnectedClient> clients = server.getClients();
-		for(int i=0; i<clients.size(); i++) {
-			getClient(clients.get(i), i, jsonObject);
-		}
-		String result = "@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
-		return Response.status(200).entity(result).build();
-	}
-	
-	@Path("{address}")
-	@GET
-	@Produces("application/json")
-	public Response getClient(@PathParam("address") String address) throws JSONException {
-		JSONObject jsonObject = new JSONObject();
-		Server server = (Server) config.getProperty("server");
-		String[] split = address.split("-");
-		InetSocketAddress clientaddr = new InetSocketAddress(split[0], Integer.parseInt(split[1]));
 		if(!server.clientExists(clientaddr)) {
-			jsonObject.put("status", "Client doesn't exist");
+			for(int i=0; i<clients.size(); i++) {
+				getClient(clients.get(i), i, jsonObject, cores, memory);
+			}
 		} else {
-		getClient(server.getClient(clientaddr), 0, jsonObject);
+			getClient(server.getClient(clientaddr), 0, jsonObject, cores, memory);
 		}
 		String result = "@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	}
 	
-	private void getClient(ConnectedClient client, int i, JSONObject jsonObject) {
+	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
+		if(cores != null) 
+			if(client.getCpuCores() != cores)
+				return;
+		if(memory != null)
+			if(client.getTotalMemory() != memory)
+				return;
 		ArrayList<Object> data = new ArrayList<Object>();
 		data.add(client.getClientAddress());
 		data.add(client.getCpuName());
@@ -59,17 +61,10 @@ public class getClientService{
 		data.add(client.getTotalMemory());
 		data.add(client.getOperatingSystem());
 		data.add(client.getHostname());
-		System.out.println(client.getClientAddress());
-		System.out.println(client.getCpuName());
-		System.out.println(client.getCpuCores());
-		System.out.println(client.getTotalMemory());
-		System.out.println(client.getOperatingSystem());
-		System.out.println(client.getHostname());
 		try {
 			jsonObject.put(Integer.toString(i), data);
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.log( Level.SEVERE, e.toString(), e );
 		}
 	}
 
