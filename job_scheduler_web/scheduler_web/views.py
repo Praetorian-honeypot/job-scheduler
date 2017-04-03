@@ -84,7 +84,8 @@ def addJob(request):
         form = AddJobForm(request.POST)
 
         if form.is_valid():
-            #send API request to server
+            payload = {'command':request.POST['command'],'priority':request.POST['priority'],
+                'deadline':request.POST['deadline']}
             return HttpResponseRedirect('/jobs/')
     else:
         form = AddJobForm()
