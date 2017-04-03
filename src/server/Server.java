@@ -80,7 +80,7 @@ public class Server extends Observable implements Runnable {
 		}
 	}
 	
-	private String getFixedAddress(InetSocketAddress fixAddress) {
+	public String getFixedAddress(InetSocketAddress fixAddress) {
 		String s = fixAddress.getAddress().toString();
 		if (!s.equals("localhost/127.0.0.1"))
 			s = s.substring(s.indexOf("/")+1);
