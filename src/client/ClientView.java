@@ -31,6 +31,7 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 	private JButton btnDisconnectFromServer;
 	private JButton btnAddServer;
 	Client client;
+	private JButton btnRunJob;
 
     public ClientView(Client client) {
     	setResizable(false);
@@ -79,11 +80,6 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 			}
 		});
 		btnAddServer.setBounds(0, 132, 215, 23);
-		btnAddServer.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-			}
-		});
 		panel.add(btnAddServer);
 		
 		lblPort = new JLabel("Port: ");
@@ -100,6 +96,16 @@ public class ClientView extends javax.swing.JFrame implements Observer {
 		lblServer.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblServer.setBounds(10, 78, 195, 32);
 		panel.add(lblServer);
+		
+		btnRunJob = new JButton("Run job");
+		btnRunJob.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent arg0) {
+				client.runJob();
+			}
+		});
+		btnRunJob.setBounds(0, 200, 215, 23);
+		panel.add(btnRunJob);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBounds(221, 5, 458, 452);

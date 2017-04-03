@@ -70,14 +70,23 @@ public class Server extends Observable implements Runnable {
 	}
 
 	private void initRMI() {
-		System.setProperty( "java.rmi.server.hostname", "217.120.142.91" ) ;
+		System.setProperty( "java.rmi.server.hostname", getFixedAddress(address) ) ;
 		try {
-			this.jobDispatcherRemote = new JobDispatcherRemote();
+			jobDispatcherRemote = new JobDispatcherRemote(this);
 			Registry registry = LocateRegistry.createRegistry(1099);
 			registry.rebind("jobDispatcher", jobDispatcherRemote);
 		} catch (RemoteException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}
+	}
+	
+	private String getFixedAddress(InetSocketAddress fixAddress) {
+		String s = fixAddress.getAddress().toString();
+		if (!s.equals("localhost/127.0.0.1"))
+			s = s.substring(s.indexOf("/")+1);
+		else
+			s = "localhost";
+		return s;
 	}
 
 	@Override
@@ -91,7 +100,16 @@ public class Server extends Observable implements Runnable {
 		logger.log(Level.FINE, "Server is initiated");
 		
 		Timer timer = new Timer();
-		timer.schedule(new ReportDispatcher(this), 0, 5000);
+		timer.schedule(new ReportSender(this), 0, 60000);
+		
+		try {
+			jobDispatcherRemote.scheduleJobs();
+		} catch (RemoteException e) {
+			log(Level.SEVERE, e.toString(), e);
+		}
+		
+		Timer timer2 = new Timer();
+		timer2.schedule(new JobSender(this), 0, 1000);
 	}
 	
 	public void update() {
@@ -182,11 +200,6 @@ public class Server extends Observable implements Runnable {
 	}
 
 	public synchronized void requestReport() {
-		if (clients.isEmpty()) {
-			log("Client list is empty");
-			return;
-		}
-		
 		for (ConnectedClient client : clients) {
 			client.requestReport();
 		}
@@ -231,5 +244,18 @@ public class Server extends Observable implements Runnable {
 
 	public void setJobDispatcherRemote(JobDispatcher jobDispatcherRemote) {
 		this.jobDispatcherRemote = jobDispatcherRemote;
+	}
+
+	public void requestRunJobs() {
+		try {
+			if (jobDispatcherRemote.hasJobs()) {
+				for (ConnectedClient client : clients) {
+					if (client.isAvailable())
+						client.requestRunJob();
+				}
+			}
+		} catch (RemoteException e) {
+			log(Level.SEVERE, e.toString(), e);
+		}
 	}
 }

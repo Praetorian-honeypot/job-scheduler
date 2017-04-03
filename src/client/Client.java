@@ -30,6 +30,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import jobs.Job;
 import jobs.JobDispatcher;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
@@ -45,8 +46,7 @@ public class Client extends Observable implements Runnable {
 	public static final String BROKER = readFile("server.txt");
 	private Channel channel;
 	private JobDispatcher jobDispatcher;
-	
-	
+
 	public Client(InetSocketAddress address) {
 		this.address = address;
 		initLogger();
@@ -85,7 +85,7 @@ public class Client extends Observable implements Runnable {
 		try {
 			Registry registry = LocateRegistry.getRegistry(hostIP, 1099);
 			this.jobDispatcher = (JobDispatcher) registry.lookup("jobDispatcher");
-			log("RMI is initiated on the client: "+jobDispatcher.runJob());
+			log("Succesfully initiated RMI");
 		} catch (RemoteException | NotBoundException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}
@@ -157,7 +157,7 @@ public class Client extends Observable implements Runnable {
 				clientInputHandler.resume();
 			
 			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
-			initRMI(server.getAddress().toString().replace("renebrals.nl/", ""));
+			initRMI(getFixedAddress(server));
 			send(hardwareSpec(getCommand("connect")));
 		} catch (IOException | TimeoutException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
@@ -258,12 +258,9 @@ public class Client extends Observable implements Runnable {
 	public JSONObject getCommand(String type) {
 		JSONObject command = null;
 		try {
-			String addressString = address.getAddress().toString();
-			if (addressString != "localhost/127.0.0.1")
-				addressString = addressString.replace("/", "");
 			command = new JSONObject();
 			command.put("type", type);
-			command.put("address", addressString);
+			command.put("address", getFixedAddress(address));
 			command.put("port", address.getPort());		
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
@@ -272,6 +269,15 @@ public class Client extends Observable implements Runnable {
 		return command;
 	}
 	
+	private String getFixedAddress(InetSocketAddress fixAddress) {
+		String s = fixAddress.getAddress().toString();
+		if (!s.equals("localhost/127.0.0.1"))
+			s = s.substring(s.indexOf("/")+1);
+		else
+			s = "localhost";
+		return s;
+	}
+
 	public void send(JSONObject json) {
 		send(json.toString().getBytes());
 	}
@@ -327,5 +333,48 @@ public class Client extends Observable implements Runnable {
 			pi += 4.0 * (k % 2 == 0 ? 1 : -1) / (2 * k + 1);
 		}
 		return (int)(1e11 / (System.nanoTime() - start));
+	}
+	
+	public JobDispatcher getJobDispatcher() {
+		return jobDispatcher;
+	}
+
+	public void setJobDispatcher(JobDispatcher jobDispatcher) {
+		this.jobDispatcher = jobDispatcher;
+	}
+
+	public void runJob() {
+		if (jobDispatcher != null) {
+			try {
+				Job job = jobDispatcher.getJob(address);
+				if (job != null) {
+					log("RUNNING JOB: " + job.getId());
+					Runtime rt = Runtime.getRuntime();
+					
+					Process pr = null;
+					try {
+						pr = rt.exec(job.getCommand());
+						int exitVal = pr.waitFor();
+						
+						if (exitVal == 0) {
+							log("FINISHED JOB: " + job.getId() + " WITH OUTPUT: " + exitVal);
+							jobDispatcher.finishJob(job, address);
+						} else {
+							log("FAILED JOB: " + job.getId());
+							jobDispatcher.failJob(job, address);
+						}
+					} catch (IOException | InterruptedException exception) {
+						jobDispatcher.failJob(job, address);
+						logger.log( Level.SEVERE, exception.toString(), exception );
+					}
+				} else {
+					log("No new job is available");
+				}
+			} catch (RemoteException exception) {
+				logger.log( Level.SEVERE, exception.toString(), exception );
+			}
+		} else {
+			log("No RMI connection has been made: unable to run job.");
+		}
 	}
 }

@@ -2,16 +2,16 @@ package server;
 
 import java.util.TimerTask;
 
-public class ReportDispatcher extends TimerTask {
+public class JobSender extends TimerTask {
 	private Server server;
 	
-	public ReportDispatcher (Server server) {
+	public JobSender (Server server) {
 		this.server = server;
 	}
 	
 	@Override
 	public void run() {
-		server.requestReport();
+		server.requestRunJobs();
 	}
 
 }
