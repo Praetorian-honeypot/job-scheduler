@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.rmi.RemoteException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -18,6 +19,7 @@ import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.text.DefaultCaret;
 
+import jobs.Job;
 import jobs.JobSchedulingEvent;
 
 public class ServerView extends javax.swing.JFrame implements Observer {
@@ -87,6 +89,11 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		btnDisconnectFromServer.setBounds(0, 140, 215, 23);
 		btnDisconnectFromServer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					server.getJobDispatcherRemote().setJob(new Job("command", 50, 23352352));
+				} catch (RemoteException e1) {
+					e1.printStackTrace();
+				}
 				server.requestReport();
 			}
 		});

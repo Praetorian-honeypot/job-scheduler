@@ -1,8 +1,10 @@
 package jobs;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Job {
+public class Job implements Serializable {
+	private static final long serialVersionUID = -2507969953093203316L;
 	//private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	private Date deadline;
 	private String command;

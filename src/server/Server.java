@@ -1,6 +1,10 @@
 package server;
 
 import java.net.InetSocketAddress;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,6 +18,8 @@ import java.util.logging.Logger;
 
 import api.RestAPI;
 import database.SQLite;
+import jobs.JobDispatcher;
+import jobs.JobDispatcherRemote;  
 
 public class Server extends Observable implements Runnable {
 	private transient static final Logger logger = Logger.getLogger( Server.class.getName() );
@@ -23,10 +29,17 @@ public class Server extends Observable implements Runnable {
 	private ServerInputHandler serverInputHandler;
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	private SQLite database;
+	private JobDispatcher jobDispatcherRemote;
+
 	public static final String API_URI = "http://localhost:8080/api/";
 	
 	public Server(InetSocketAddress address) {
 		this.address = address;
+		initLogger();		
+		initRMI();
+	}
+	
+	private void initLogger() {
 		logger.setLevel(Level.ALL);
 		logger.addHandler(new Handler() {
 			@Override
@@ -51,7 +64,17 @@ public class Server extends Observable implements Runnable {
         	
         });
 	}
-	
+
+	private void initRMI() {
+		try {
+			this.jobDispatcherRemote = new JobDispatcherRemote();
+			Registry registry = LocateRegistry.createRegistry(1099);
+			registry.rebind("hello", jobDispatcherRemote);
+		} catch (RemoteException e) {
+			log(Level.SEVERE, e.toString(), e);
+		}
+	}
+
 	@Override
 	public void run() {
 		update();
@@ -194,4 +217,11 @@ public class Server extends Observable implements Runnable {
 		this.database = database;
 	}
 	
+	public JobDispatcher getJobDispatcherRemote() {
+		return jobDispatcherRemote;
+	}
+
+	public void setJobDispatcherRemote(JobDispatcher jobDispatcherRemote) {
+		this.jobDispatcherRemote = jobDispatcherRemote;
+	}
 }

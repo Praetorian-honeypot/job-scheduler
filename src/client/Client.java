@@ -4,9 +4,15 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,12 +24,16 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
+import jobs.Job;
+import jobs.JobDispatcher;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
 
@@ -37,10 +47,16 @@ public class Client extends Observable implements Runnable {
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	public static final String BROKER = readFile("server.txt");
 	private Channel channel;
+	private JobDispatcher jobDispatcher;
 	
 	
 	public Client(InetSocketAddress address) {
 		this.address = address;
+		initLogger();
+		initRMI();
+	}
+
+	private void initLogger() {
 		logger.setLevel(Level.ALL);
 		logger.addHandler(new Handler() {
 			@Override
@@ -67,6 +83,16 @@ public class Client extends Observable implements Runnable {
         });
 	}
 	
+	private void initRMI() {
+		try {
+			Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+			this.jobDispatcher = (JobDispatcher) registry.lookup("hello");
+			log(""+jobDispatcher.runJob());
+		} catch (RemoteException | NotBoundException e) {
+			log(Level.SEVERE, e.toString(), e);
+		}
+	}
+
 	private static String readFile(String path) {
 		byte[] encoded = null;
 		try {
