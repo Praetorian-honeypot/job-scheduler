@@ -5,13 +5,10 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Configuration;
@@ -48,7 +45,7 @@ public class clientService{
 		} else {
 			getClient(server.getClient(clientaddr), 0, jsonObject, cores, memory);
 		}
-		String result = jsonObject.toString(); //"@Produces(\"application/json\") Output: \n\nGet Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString(); 
 		return Response.status(200).entity(result).build();
 	}
 	
@@ -70,9 +67,9 @@ public class clientService{
 				jsonObject.put("result", "addition failed");
 			}
 		}
-		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nAdd Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
-	 }
+	}
 
 	@Path("/removeclient")
 	@DELETE
@@ -91,9 +88,9 @@ public class clientService{
 				jsonObject.put("result", "deletion failed");
 			}
 		}
-		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
-	 }
+	}
 
 	
 	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {

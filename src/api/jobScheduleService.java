@@ -31,28 +31,23 @@ public class jobScheduleService{
 	@Produces("application/json")
 	public Response getJobSchedules(@QueryParam("date1") Date date1, @QueryParam("date2") Date date2, @QueryParam("job") Integer job,
 									@QueryParam("status") Integer status, @QueryParam("client") Integer client) throws JSONException {
-
+		job = (job == null) ? -1 : job;
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
-		ArrayList<JobSchedulingEvent> schedules = server.getDatabase().getAllJobSchedulingEvents(job);
-		for(int i=0; i<schedules.size(); i++)
-			getJobScheduleEvent(schedules.get(i), date1, date2, status, client, jsonObject, i);
-		String result = "@Produces(\"application/json\") Output: \n\nJobScheduleService Output: \n\n" + jsonObject;
+		ArrayList<Job> jobs = server.getDatabase().getAllJobs();
+		int k=0;
+		for(int i=0; i<jobs.size(); i++) {
+			if(job != -1 & job != jobs.get(i).getId())
+				continue;
+			ArrayList<JobSchedulingEvent> schedules = server.getDatabase().getAllJobSchedulingEvents(jobs.get(i).getId());
+			for(int j=0; j<schedules.size(); j++) 
+				getJobScheduleEvent(schedules.get(i), date1, date2, status, client, jsonObject, k);
+				k++;
+		}
+
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
-
-	@Path("/addjobschedulingevent")
-	@POST
-	@Produces("application/json")
-	public Response addJob(@QueryParam("date") Date date, @QueryParam("job") Integer job,
-							@QueryParam("status") Integer status, @QueryParam("client") Integer client) throws JSONException {
-		//todo
-		JSONObject jsonObject = new JSONObject();
-		Server server = (Server) config.getProperty("server");
-
-		String result = "@Produces(\"application/json\") Output: \n\nJobScheduleService Output: \n\n" + jsonObject;
-		return Response.status(200).entity(result).build();
-	 }
 
 	private void getJobScheduleEvent(JobSchedulingEvent j, Date date1, Date date2, Integer status,
 			Integer client, JSONObject jsonObject, int i) {

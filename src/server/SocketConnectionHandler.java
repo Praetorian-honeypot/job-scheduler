@@ -3,6 +3,7 @@ package server;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -17,6 +18,7 @@ public class SocketConnectionHandler implements Runnable {
 	private InputStream in;
 	private DataInputStream dis;
 	private Server server;
+	private InetAddress clientAddress;
 
 	public SocketConnectionHandler(Socket client, Server server) {
 		this.client = client;
@@ -28,6 +30,7 @@ public class SocketConnectionHandler implements Runnable {
 		try {
 			in = client.getInputStream();
 			dis = new DataInputStream(in);
+			clientAddress = client.getInetAddress();
 			
 			while (running) {
 				int size = dis.readInt();
@@ -67,9 +70,6 @@ public class SocketConnectionHandler implements Runnable {
 			JSONObject json = new JSONObject(result);
 			String type = json.getString("type");
 			
-			String clientAddress = json.getString("address").trim();
-			if (clientAddress.equals("localhost/127.0.0.1"))
-				clientAddress = "localhost";
 			int clientPort = Integer.parseInt(json.getString("port"));
 			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
 			

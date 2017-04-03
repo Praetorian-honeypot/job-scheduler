@@ -111,7 +111,7 @@ public class SQLite {
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
-		return 0;
+		return Integer.MAX_VALUE;
 	}
 	
 	public Collection<? extends ClientReport> getClientReports(int clientId, InetSocketAddress clientAddress) {

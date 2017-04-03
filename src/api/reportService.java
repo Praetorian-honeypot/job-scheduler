@@ -64,7 +64,7 @@ public class reportService{
 		}
 
 		
-		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nReportService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
 	
