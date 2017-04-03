@@ -19,11 +19,14 @@ class LoadMeasurement(models.Model):
 class Server(models.Model):
     hostname = models.CharField(max_length = 32)
     hostport = models.IntegerField(default = 8901)
+    address= models.CharField(max_length = 32)
     displayName = models.CharField(max_length = 32)
     cpuName = models.CharField(max_length = 32)
     cpuCores = models.IntegerField(default = 1, blank=True)
     memoryAmount = models.FloatField()
     serverGroup = models.ForeignKey('ServerGroup', on_delete = models.SET_NULL, null=True, blank=True)
+
+    idOnServer = models.IntegerField(default = -1)
 
     def __str__(self):
         return self.hostname
@@ -52,6 +55,8 @@ class Job(models.Model):
     command = models.CharField(max_length=256)
     priority = models.IntegerField(default = 1)
     deadline = models.DateTimeField('Requested deadline')
+
+    idOnServer = models.IntegerField(default = -1)
 
     def schedStatus(self):
         jobSchedulingEvents = JobSchedulingEvent.objects.filter(job = self)
