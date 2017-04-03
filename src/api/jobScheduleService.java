@@ -26,10 +26,10 @@ public class jobScheduleService{
 	private transient static final Logger logger = Logger.getLogger( jobScheduleService.class.getName() );
 	@Context
     Configuration config;
-	
+
 	@GET
 	@Produces("application/json")
-	public Response getJobSchedules(@QueryParam("date1") Date date1, @QueryParam("date2") Date date2, @QueryParam("job") Integer job, 
+	public Response getJobSchedules(@QueryParam("date1") Date date1, @QueryParam("date2") Date date2, @QueryParam("job") Integer job,
 									@QueryParam("status") Integer status, @QueryParam("client") Integer client) throws JSONException {
 
 		JSONObject jsonObject = new JSONObject();
@@ -40,11 +40,11 @@ public class jobScheduleService{
 		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
-	
+
 	@Path("/addjobschedulingevent")
 	@POST
 	@Produces("application/json")
-	public Response addJob(@QueryParam("date") Date date, @QueryParam("job") Integer job, 
+	public Response addJob(@QueryParam("date") Date date, @QueryParam("job") Integer job,
 							@QueryParam("status") Integer status, @QueryParam("client") Integer client) throws JSONException {
 		//todo
 		JSONObject jsonObject = new JSONObject();
@@ -52,11 +52,11 @@ public class jobScheduleService{
 
 		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
-	 } 
-	
+	 }
+
 	private void getJobScheduleEvent(JobSchedulingEvent j, Date date1, Date date2, Integer status,
 			Integer client, JSONObject jsonObject, int i) {
-		if(date1 != null && date2 != null) 
+		if(date1 != null && date2 != null)
 			if(date1.after(j.getEventDate()) || date2.before(j.getEventDate()))
 				return;
 		if(status != null)
@@ -76,7 +76,4 @@ public class jobScheduleService{
 			logger.log( Level.SEVERE, e.toString(), e );
 		}
 	}
-	
-
-
 }

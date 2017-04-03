@@ -93,21 +93,20 @@ public class SQLite {
 	public int addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory,
 			String displayName, int performance, int time) {
 		try {
-			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (client, address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?,?)");
-			int clientId = stmt.getGeneratedKeys().getInt(1);
-			stmt.setInt(1, clientId);
-			stmt.setString(2, client.getAddress().toString());
-			stmt.setString(3, client.getHostName());
-			stmt.setInt(4, client.getPort());
-			stmt.setString(5, cpuName);
-			stmt.setInt(6, cpuCores);
-			stmt.setString(7, os);
-			stmt.setInt(8, memory);
-			stmt.setString(9, displayName);
-			stmt.setInt(10, performance);
-			stmt.setInt(11, time);
+			PreparedStatement stmt = c.prepareStatement("INSERT INTO clients (address, hostname, hostport, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance, createDate) VALUES (?,?,?,?,?,?,?,?,?,?)");
+			stmt.setString(1, client.getAddress().toString());
+			stmt.setString(2, client.getHostName());
+			stmt.setInt(3, client.getPort());
+			stmt.setString(4, cpuName);
+			stmt.setInt(5, cpuCores);
+			stmt.setString(6, os);
+			stmt.setInt(7, memory);
+			stmt.setString(8, displayName);
+			stmt.setInt(9, performance);
+			stmt.setInt(10, time);
 			stmt.executeUpdate();
 			server.log("Succesfully added client with specs");
+			int clientId = stmt.getGeneratedKeys().getInt(1);
 			return clientId;
 		} catch (Exception exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
@@ -213,6 +212,35 @@ public class SQLite {
 		return jobs;
 	}
 	
+	public ArrayList<Job> getAllWaitingJobs() {
+		return getAllJobsByStatus(JobSchedulingEvent.getStatusCode("entered"));
+	}
+	
+	public ArrayList<Job> getAllRunningJobs() {
+		return getAllJobsByStatus(JobSchedulingEvent.getStatusCode("running"));
+	}
+	
+	public ArrayList<Job> getAllFinishedJobs() {
+		return getAllJobsByStatus(JobSchedulingEvent.getStatusCode("finished"));
+	}
+	
+	private ArrayList<Job> getAllJobsByStatus(int statusCode) {
+		ArrayList<Job> jobs = new ArrayList<Job>();
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobs "
+					+ "INNER JOIN (SELECT *, max(eventDate) FROM jobSchedulingEvents GROUP BY job) AS jse ON jse.job = jobs.id "
+					+ "WHERE jse.schedStatus = ?");
+			stmt.setInt(1, statusCode);
+			ResultSet result = stmt.executeQuery();
+			while (result.next()) {
+				jobs.add(new Job(result.getInt("id"), result.getString("command"), result.getInt("priority"), result.getInt("deadline")));
+			}
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return jobs;
+	}
+
 	public void setJobStatus(int jobId, int schedStatus, int clientId) {
 		Job job = getJob(jobId);
 		
@@ -306,6 +334,19 @@ public class SQLite {
 		return events;
 	}
 	
+	public ArrayList<JobSchedulingEvent> getAllJobSchedulingEvents() {
+		ArrayList<JobSchedulingEvent> events = new ArrayList<JobSchedulingEvent>();
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobSchedulingEvents");
+			ResultSet found = stmt.executeQuery();
+			while (found.next())
+				events.add(new JobSchedulingEvent(found.getInt("job"), found.getInt("eventDate"), found.getInt("schedStatus"), found.getInt("client")));
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return events;
+	}
+	
 	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
 			int performance) {
 		int clientId = findClient(client);
@@ -345,7 +386,6 @@ public class SQLite {
 			Statement stmt = c.createStatement();
 			String sql = "CREATE TABLE clients " +
 	                   "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
-	                   " client         INTEGER NOT NULL, " +
 	                   " address        TEXT NOT NULL, " + 
 	                   " hostname       TEXT NOT NULL, " + 
 	                   " hostport       INTEGER NOT NULL, " + 

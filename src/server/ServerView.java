@@ -89,11 +89,6 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 		btnDisconnectFromServer.setBounds(0, 140, 215, 23);
 		btnDisconnectFromServer.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					server.getJobDispatcherRemote().setJob(new Job("command", 50, 23352352));
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
-				}
 				server.requestReport();
 			}
 		});
@@ -116,7 +111,12 @@ public class ServerView extends javax.swing.JFrame implements Observer {
 				String command = JOptionPane.showInputDialog(panel, "Enter the command", null);
 				int priority = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the priority of the job", null));
 				int deadline = Integer.parseInt(JOptionPane.showInputDialog(panel, "Enter the deadline as an integer", null));
-				server.getDatabase().addJob(command, priority, deadline);
+				int jobId = server.getDatabase().addJob(command, priority, deadline);
+				try {
+					server.getJobDispatcherRemote().addJob(new Job(jobId, command, priority, deadline, 0));
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 		btnNewJob.setBounds(0, 174, 215, 23);

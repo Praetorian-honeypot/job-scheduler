@@ -120,6 +120,10 @@ public class ClientInputHandler implements Runnable {
 				case "spec":
 					client.log("Server requests client hardware specifications");
 					client.sendHardwareSpec();
+				case "runJob":
+					client.log("Server requests to run a job");
+					client.runJob();
+					break;
 			}
 		} catch (JSONException exception) {
 			client.log( Level.SEVERE, exception.toString(), exception );

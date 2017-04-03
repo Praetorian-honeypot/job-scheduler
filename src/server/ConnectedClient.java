@@ -27,6 +27,7 @@ public class ConnectedClient {
 	private int performance;
 	private int id;
 	private int time;
+	private boolean available = true;
 	
 	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
 		this.server = server;
@@ -95,6 +96,19 @@ public class ConnectedClient {
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+	
+	public void requestRunJob() {
+		JSONObject reportData = null;
+		try {
+			reportData = new JSONObject();
+			reportData.put("type", "runJob");
+			server.log("Requesting client " + id + " to run a job...");
+		} catch (JSONException exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		setAvailable(false);
+		send(reportData);
 	}
 	
 	public void requestReport() {
@@ -193,6 +207,14 @@ public class ConnectedClient {
 	public String getDisplayName() {
 		SystemInfo sysInfo = new SystemInfo();
 		return sysInfo.getOperatingSystem().getNetworkParams().getHostName();
+	}
+
+	public boolean isAvailable() {
+		return available;
+	}
+
+	public void setAvailable(boolean available) {
+		this.available = available;
 	}
 
 }
