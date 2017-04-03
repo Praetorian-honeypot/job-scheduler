@@ -18,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -51,7 +50,6 @@ public class Client extends Observable implements Runnable {
 	public Client(InetSocketAddress address) {
 		this.address = address;
 		initLogger();
-		initRMI();
 	}
 
 	private void initLogger() {
@@ -81,11 +79,13 @@ public class Client extends Observable implements Runnable {
         });
 	}
 	
-	private void initRMI() {
+	private void initRMI(String hostIP) {
+		log("Initiating RMI on host: " + hostIP);
+		System.setProperty("java.rmi.server.hostname", hostIP);
 		try {
-			Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+			Registry registry = LocateRegistry.getRegistry(hostIP, 1099);
 			this.jobDispatcher = (JobDispatcher) registry.lookup("jobDispatcher");
-			log(""+jobDispatcher.runJob());
+			log("RMI is initiated on the client: "+jobDispatcher.runJob());
 		} catch (RemoteException | NotBoundException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}
@@ -157,6 +157,7 @@ public class Client extends Observable implements Runnable {
 				clientInputHandler.resume();
 			
 			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
+			initRMI(server.getAddress().toString().replace("renebrals.nl/", ""));
 			send(hardwareSpec(getCommand("connect")));
 		} catch (IOException | TimeoutException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
@@ -257,11 +258,13 @@ public class Client extends Observable implements Runnable {
 	public JSONObject getCommand(String type) {
 		JSONObject command = null;
 		try {
+			String addressString = address.getAddress().toString();
+			if (addressString != "localhost/127.0.0.1")
+				addressString = addressString.replace("/", "");
 			command = new JSONObject();
 			command.put("type", type);
-			command.put("address", address.getAddress().toString());
-			command.put("port", address.getPort());
-			log(address.getAddress().toString());
+			command.put("address", addressString);
+			command.put("port", address.getPort());		
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}

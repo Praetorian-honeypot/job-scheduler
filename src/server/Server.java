@@ -70,6 +70,7 @@ public class Server extends Observable implements Runnable {
 	}
 
 	private void initRMI() {
+		System.setProperty( "java.rmi.server.hostname", "217.120.142.91" ) ;
 		try {
 			this.jobDispatcherRemote = new JobDispatcherRemote();
 			Registry registry = LocateRegistry.createRegistry(1099);
