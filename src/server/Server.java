@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Timer;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -41,6 +42,9 @@ public class Server extends Observable implements Runnable {
 	
 	private void initLogger() {
 		logger.setLevel(Level.ALL);
+		Handler consoleHandler = new ConsoleHandler();
+		consoleHandler.setLevel(Level.FINER);
+		logger.addHandler(consoleHandler);
 		logger.addHandler(new Handler() {
 			@Override
 			public void close() throws SecurityException {
@@ -69,7 +73,7 @@ public class Server extends Observable implements Runnable {
 		try {
 			this.jobDispatcherRemote = new JobDispatcherRemote();
 			Registry registry = LocateRegistry.createRegistry(1099);
-			registry.rebind("hello", jobDispatcherRemote);
+			registry.rebind("jobDispatcher", jobDispatcherRemote);
 		} catch (RemoteException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}

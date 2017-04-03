@@ -4,11 +4,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -20,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -32,7 +31,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
-import jobs.Job;
 import jobs.JobDispatcher;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
@@ -86,7 +84,7 @@ public class Client extends Observable implements Runnable {
 	private void initRMI() {
 		try {
 			Registry registry = LocateRegistry.getRegistry("localhost", 1099);
-			this.jobDispatcher = (JobDispatcher) registry.lookup("hello");
+			this.jobDispatcher = (JobDispatcher) registry.lookup("jobDispatcher");
 			log(""+jobDispatcher.runJob());
 		} catch (RemoteException | NotBoundException e) {
 			log(Level.SEVERE, e.toString(), e);
@@ -263,6 +261,7 @@ public class Client extends Observable implements Runnable {
 			command.put("type", type);
 			command.put("address", address.getAddress().toString());
 			command.put("port", address.getPort());
+			log(address.getAddress().toString());
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
