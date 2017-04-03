@@ -306,6 +306,19 @@ public class SQLite {
 		return events;
 	}
 	
+	public ArrayList<JobSchedulingEvent> getAllJobSchedulingEvents() {
+		ArrayList<JobSchedulingEvent> events = new ArrayList<JobSchedulingEvent>();
+		try {
+			PreparedStatement stmt = c.prepareStatement("SELECT * FROM jobSchedulingEvents");
+			ResultSet found = stmt.executeQuery();
+			while (found.next())
+				events.add(new JobSchedulingEvent(found.getInt("job"), found.getInt("eventDate"), found.getInt("schedStatus"), found.getInt("client")));
+		} catch (Exception exception) {
+			server.log( Level.SEVERE, exception.toString(), exception );
+		}
+		return events;
+	}
+	
 	public void setSpecs(InetSocketAddress client, String cpuName, int cpuCores, String operatingSystem, int memoryAmount, String displayName,
 			int performance) {
 		int clientId = findClient(client);

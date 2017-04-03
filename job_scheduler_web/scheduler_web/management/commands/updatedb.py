@@ -82,7 +82,7 @@ def fetchServerReports():
 def fetchJobSchedules():
     JobSchedulingEvent.objects.all().delete()
 
-    r = requests.get("http://localhost:8080/api/jobscheduleservice")
+    r = requests.get("http://localhost:8080/api/jobscheduleservice/all")
 
     json = r.json()
 

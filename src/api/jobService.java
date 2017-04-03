@@ -38,7 +38,7 @@ public class jobService{
 		ArrayList<Job> jobs = server.getDatabase().getAllJobs();
 		for(int i=0; i<jobs.size(); i++)
 			getJob(jobs.get(i), date1, date2, command, priority, jobId, jsonObject, i);
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 } 
 	
@@ -53,7 +53,7 @@ public class jobService{
 			jsonObject.put("status", "Adding job failed");
 		else 
 			jsonObject.put("status", "Job added succesfully with jobId " + jobId);
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	}
 	
@@ -64,7 +64,7 @@ public class jobService{
 		//todo
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	} 
 	
@@ -83,7 +83,7 @@ public class jobService{
 		if(deadline != null)
 			j.setDeadline(deadline);
 		jsonObject.put("status", "Job changed successfully");
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 } 
 	

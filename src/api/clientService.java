@@ -70,7 +70,7 @@ public class clientService{
 				jsonObject.put("result", "addition failed");
 			}
 		}
-		String result = "@Produces(\"application/json\") Output: \n\nAdd Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nAdd Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 }
 
@@ -91,7 +91,7 @@ public class clientService{
 				jsonObject.put("result", "deletion failed");
 			}
 		}
-		String result = "@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();//"@Produces(\"application/json\") Output: \n\nRemove Client Output: \n\n" + jsonObject;
 		return Response.status(200).entity(result).build();
 	 }
 
