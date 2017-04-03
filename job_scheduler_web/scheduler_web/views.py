@@ -106,35 +106,3 @@ def loadMeasurementsCSV(request,serverID):
         writer.writerow([meas.date.strftime("%Y-%m-%d %H:%M"),meas.cpuLoad,meas.memoryLoad])
 
     return response
-
-def fetchAPI():
-    fetchJobs()
-    fetchServers()
-
-def fetchJobs():
-    #Job.objects.all().delete()
-    #
-    #r = requests.get("http://192.168.0.25:11111/api/clientservice")
-    #
-    #json = r.json()
-
-def fetchServers():
-    Server.objects.all().delete()
-
-    r = requests.get("http://192.168.0.25:11111/api/clientservice")
-
-    json = r.json()
-
-    i = 0
-    while(True):
-        try:
-            server = Server(hostname = json[str(i)][0].split(":")[0],
-                    hostport = json[str(i)][0].split(":")[1],
-                    displayName = json[str(i)][5],
-                    cpuName = json[str(i)][1],
-                    cpuCores = json[str(i)][2],
-                    memoryAmount = json[str(i)][3])
-            server.save()
-            i += 1
-        except:
-            pass
