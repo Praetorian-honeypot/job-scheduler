@@ -23,7 +23,6 @@ def index(request):
     return HttpResponse(template.render(context,request))
 
 def servers(request):
-    fetchServers()
 
     server_list = Server.objects.order_by('hostname')
     context = {'server_list': server_list}
