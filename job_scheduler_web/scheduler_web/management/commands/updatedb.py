@@ -93,7 +93,7 @@ def fetchJobSchedules():
             job = Job.objects.get(idOnServer=json[str(i)][0])
 
             schedEvent = JobSchedulingEvent(eventDate = json[str(i)][1],
-                status = json[str(i)][2]
+                status = json[str(i)][2],
                 server = server)
 
             schedEvent.save()

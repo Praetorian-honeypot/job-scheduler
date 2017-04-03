@@ -28,7 +28,8 @@ public class RestAPI {
     public static HttpServer startServer(Server server, String address) {
         // create a resource config that scans for JAX-RS resources and providers
         // in com.underdog.jersey.grizzly package
-        final ResourceConfig rc = new ResourceConfig().packages("api");
+        final ResourceConfig rc = new ResourceConfig(clientService.class,jobService.class,jobScheduleService.class,reportService.class);
+        
         rc.property("server", server);
 
         // create and start a new instance of grizzly http server
