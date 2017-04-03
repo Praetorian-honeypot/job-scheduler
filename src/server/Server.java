@@ -1,7 +1,6 @@
 package server;
 
 import java.net.InetSocketAddress;
-import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Observable;
+import java.util.Timer;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -84,6 +84,9 @@ public class Server extends Observable implements Runnable {
 		this.setDatabase(new SQLite(this));
 		new RestAPI(this, API_URI);
 		logger.log(Level.FINE, "Server is initiated");
+		
+		Timer timer = new Timer();
+		timer.schedule(new ReportDispatcher(this), 0, 5000);
 	}
 	
 	public void update() {
