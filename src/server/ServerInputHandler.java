@@ -114,7 +114,7 @@ public class ServerInputHandler implements Runnable {
 			JSONObject json = new JSONObject(result);
 			String type = json.getString("type");
 			
-			String clientAddress = json.getString("address").replace("/", "");
+			String clientAddress = json.getString("address").trim();
 			if (clientAddress.equals("localhost/127.0.0.1"))
 				clientAddress = "localhost";
 			int clientPort = Integer.parseInt(json.getString("port"));
