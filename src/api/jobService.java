@@ -48,7 +48,7 @@ public class jobService{
 	public Response addJob(@QueryParam("command") String command, @QueryParam("priority") Integer priority, @QueryParam("deadline") Integer deadline) throws JSONException {
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
-		int jobId = server.getDatabase().addJob(command, priority, deadline);
+		int jobId = server.getDatabase().addJob(command, priority, (int)(System.currentTimeMillis() / 1000) + 604800);
 		if(server.getDatabase().getJob(jobId) == null) 
 			jsonObject.put("status", "Adding job failed");
 		else 
