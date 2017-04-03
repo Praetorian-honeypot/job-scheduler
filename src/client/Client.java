@@ -3,6 +3,7 @@ package client;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -106,9 +107,6 @@ public class Client extends Observable implements Runnable {
 		logger.log(Level.FINE, "Client is initiated");
 		this.setChanged();
 		this.notifyObservers();
-		
-		clientInputHandler = new ClientInputHandler(this);
-		clientInputHandler.start();
 	}
 
 	public InetSocketAddress getAddress() {
@@ -143,6 +141,9 @@ public class Client extends Observable implements Runnable {
 			if (serverSocket == null)
 				serverSocket = new Socket(server.getAddress(), server.getPort());
 			
+			clientInputHandler = new ClientInputHandler(this);
+			clientInputHandler.start();
+			
 			ConnectionFactory factory = new ConnectionFactory();
 		    factory.setHost(BROKER);
 			Connection connection = factory.newConnection();
@@ -152,9 +153,6 @@ public class Client extends Observable implements Runnable {
 			channel.queueDeclare("serverIn",false,false,false,null);
 			
 			log("Connected to MQ broker.");
-			
-			if (clientInputHandler.isSuspended())
-				clientInputHandler.resume();
 			
 			logger.log(Level.FINE, "Client is connected to: " + server.getHostName());
 			initRMI(getFixedAddress(server));
@@ -260,13 +258,22 @@ public class Client extends Observable implements Runnable {
 		try {
 			command = new JSONObject();
 			command.put("type", type);
-			command.put("address", getFixedAddress(address));
-			command.put("port", address.getPort());		
+			command.put("address", getFixedAddress(serverSocket.getInetAddress()));
+			command.put("port", serverSocket.getPort());		
 		} catch (JSONException exception) {
 			logger.log( Level.SEVERE, exception.toString(), exception );
 		}
 		
 		return command;
+	}
+	
+	private String getFixedAddress(InetAddress fixAddress) {
+		String s = fixAddress.toString();
+		if (!s.equals("localhost/127.0.0.1"))
+			s = s.substring(s.indexOf("/")+1);
+		else
+			s = "localhost";
+		return s;
 	}
 	
 	private String getFixedAddress(InetSocketAddress fixAddress) {
@@ -377,4 +384,14 @@ public class Client extends Observable implements Runnable {
 			log("No RMI connection has been made: unable to run job.");
 		}
 	}
+	
+	public Socket getServerSocket() {
+		return serverSocket;
+	}
+
+	public void setServerSocket(Socket serverSocket) {
+		this.serverSocket = serverSocket;
+	}
+
 }
+

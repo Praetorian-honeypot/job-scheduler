@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
@@ -46,28 +45,6 @@ public class clientService{
 			getClient(server.getClient(clientaddr), 0, jsonObject, cores, memory);
 		}
 		String result = jsonObject.toString(); 
-		return Response.status(200).entity(result).build();
-	}
-	
-
-	@Path("/addclient")
-	@POST
-	@Produces("application/json")
-	public Response addClient(@QueryParam("address") String addr, @QueryParam("port") Integer port) throws JSONException {
-		JSONObject jsonObject = new JSONObject();
-		Server server = (Server) config.getProperty("server");
-		InetSocketAddress clientaddr = new InetSocketAddress(addr, port);
-		if(server.clientExists(clientaddr)) {
-			jsonObject.put("result", "Client with address " + clientaddr + " already exists");
-		} else { 
-			server.addClient(clientaddr);
-			if(server.clientExists(clientaddr)) {
-				jsonObject.put("result", "addition succesful");
-			} else { 
-				jsonObject.put("result", "addition failed");
-			}
-		}
-		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	}
 

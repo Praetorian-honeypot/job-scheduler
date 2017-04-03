@@ -1,6 +1,7 @@
 package server;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -100,7 +101,7 @@ public class Server extends Observable implements Runnable {
 		logger.log(Level.FINE, "Server is initiated");
 		
 		Timer timer = new Timer();
-		timer.schedule(new ReportSender(this), 0, 60000);
+		timer.schedule(new ReportSender(this), 0, 5000);
 		
 		try {
 			jobDispatcherRemote.scheduleJobs();
@@ -141,30 +142,16 @@ public class Server extends Observable implements Runnable {
 		}
 		return messageText;
 	}
-
-	public void addClient(InetSocketAddress client) {
-		if (!clientExists(client)) {
-			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
-			
-			int clientId = database.findClient(client);
-			if (clientId == 0)
-				database.addClient(client);
-			
-			ConnectedClient connectedClient = new ConnectedClient(this, client);
-			
-			clients.add(connectedClient);
-			update();
-		}
-	}
 	
-	public void addClient(InetSocketAddress client, String cpuName, int cpuCores, String os, int memory, String displayName, int performance) {
-		if (!clientExists(client)) {
-			log("Adding client: " + client.getAddress() + " on port: " + client.getPort());
+	public void addClient(Socket client, String cpuName, int cpuCores, String os, int memory, String displayName, int performance) {
+		InetSocketAddress clientAddress = new InetSocketAddress(client.getInetAddress(), client.getPort());
+		if (!clientExists(clientAddress)) {
+			log("Adding client: " + client.getInetAddress() + " on port: " + client.getPort());
 			int time = (int) (new Date().getTime() / 1000);
-			int clientId = database.findClient(client);
+			int clientId = database.findClient(clientAddress);
 			if (clientId == 0) 
-				clientId = database.addClient(client, cpuName, cpuCores, os, memory, displayName, performance, time);
-			ConnectedClient connectedClient = new ConnectedClient(this, client, cpuName, cpuCores, os, memory, displayName, performance, time, clientId);
+				clientId = database.addClient(clientAddress, cpuName, cpuCores, os, memory, displayName, performance, time);
+			ConnectedClient connectedClient = new ConnectedClient(this, client, clientAddress, cpuName, cpuCores, os, memory, displayName, performance, time, clientId);
 			
 			clients.add(connectedClient);
 			update();
@@ -200,6 +187,11 @@ public class Server extends Observable implements Runnable {
 	}
 
 	public synchronized void requestReport() {
+		if (clients.isEmpty()) {
+			log("Client list is empty!");
+			return;
+		}
+		
 		for (ConnectedClient client : clients) {
 			client.requestReport();
 		}

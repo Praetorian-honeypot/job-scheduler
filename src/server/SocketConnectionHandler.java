@@ -3,7 +3,6 @@ package server;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -18,7 +17,6 @@ public class SocketConnectionHandler implements Runnable {
 	private InputStream in;
 	private DataInputStream dis;
 	private Server server;
-	private InetAddress clientAddress;
 
 	public SocketConnectionHandler(Socket client, Server server) {
 		this.client = client;
@@ -30,7 +28,6 @@ public class SocketConnectionHandler implements Runnable {
 		try {
 			in = client.getInputStream();
 			dis = new DataInputStream(in);
-			clientAddress = client.getInetAddress();
 			
 			while (running) {
 				int size = dis.readInt();
@@ -70,9 +67,6 @@ public class SocketConnectionHandler implements Runnable {
 			JSONObject json = new JSONObject(result);
 			String type = json.getString("type");
 			
-			int clientPort = Integer.parseInt(json.getString("port"));
-			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
-			
 			switch (type) {
 				case "connect":
 					String cpuName = json.getString("cpuName");
@@ -85,7 +79,7 @@ public class SocketConnectionHandler implements Runnable {
 					server.addClient(client, cpuName, cpuCores, operatingSystem, memoryAmount, displayName, performance);
 					break;
 				case "disconnect":
-					server.removeClient(client);
+					server.removeClient(new InetSocketAddress(client.getInetAddress(), client.getPort()));
 					break;
 				default:
 					server.log(Level.SEVERE, "ERROR: server doesn't recognize this input type: " + type, null);

@@ -16,7 +16,7 @@ import oshi.SystemInfo;
 public class ConnectedClient {
 	private Server server;
 	private InetSocketAddress clientAddress;
-	private Socket clientSocket = null;
+	private Socket client = null;
 	private ArrayList<ClientReport> reports = new ArrayList<ClientReport>();
 	
 	private String cpuName;
@@ -29,21 +29,16 @@ public class ConnectedClient {
 	private int time;
 	private boolean available = true;
 	
-	public ConnectedClient(Server server, InetSocketAddress clientAddress) {
+	public ConnectedClient(Server server, Socket client, InetSocketAddress clientAddress) {
 		this.server = server;
+		this.setClient(client);
 		this.setClientAddress(clientAddress);
 		findExistingClientRecords();
-			
-		try {
-			clientSocket = new Socket(clientAddress.getAddress(), clientAddress.getPort());
-		} catch (IOException exception) {
-			server.log( Level.SEVERE, exception.toString(), exception );
-		}
+		server.log("Created connected client: " + clientAddress.getAddress() + ":" + clientAddress.getPort());
 	}
 	
-	public ConnectedClient(Server server, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance, int time, int id) {
-		this.server = server;
-		this.setClientAddress(clientAddress);
+	public ConnectedClient(Server server, Socket client, InetSocketAddress clientAddress, String cpuName, int cpuCores, String os, int memory, String hostname, int performance, int time, int id) {
+		this(server,client,clientAddress);
 		this.cpuName = cpuName;
 		this.cpuCores = cpuCores;
 		this.operatingSystem = os;
@@ -52,13 +47,7 @@ public class ConnectedClient {
 		this.id = id;
 		this.time=time;
 		
-		findExistingClientRecords();
-			
-		try {
-			clientSocket = new Socket(clientAddress.getAddress(), clientAddress.getPort());
-		} catch (IOException exception) {
-			server.log( Level.SEVERE, exception.toString(), exception );
-		}
+		
 	}
 
 	private void findExistingClientRecords() {
@@ -83,7 +72,7 @@ public class ConnectedClient {
 			if (start < 0 || start >= sendData.length)
 				throw new IndexOutOfBoundsException("Byte start index out of bounds: " + start);
 			
-			OutputStream out = clientSocket.getOutputStream();
+			OutputStream out = client.getOutputStream();
 			DataOutputStream dos = new DataOutputStream(out);
 			
 			dos.writeInt(len);
@@ -215,6 +204,14 @@ public class ConnectedClient {
 
 	public void setAvailable(boolean available) {
 		this.available = available;
+	}
+
+	public Socket getClient() {
+		return client;
+	}
+
+	public void setClient(Socket client) {
+		this.client = client;
 	}
 
 }
