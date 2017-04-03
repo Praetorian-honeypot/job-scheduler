@@ -23,7 +23,6 @@ def index(request):
     return HttpResponse(template.render(context,request))
 
 def servers(request):
-    fetchServers()
 
     server_list = Server.objects.order_by('hostname')
     context = {'server_list': server_list}
@@ -84,7 +83,8 @@ def addJob(request):
         form = AddJobForm(request.POST)
 
         if form.is_valid():
-            #send API request to server
+            payload = {'command':request.POST['command'],'priority':request.POST['priority']}
+            requests.post('http://localhost:8080/jobservice/addjob')
             return HttpResponseRedirect('/jobs/')
     else:
         form = AddJobForm()
