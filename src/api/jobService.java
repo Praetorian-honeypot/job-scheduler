@@ -38,7 +38,7 @@ public class jobService{
 		ArrayList<Job> jobs = server.getDatabase().getAllJobs();
 		for(int i=0; i<jobs.size(); i++)
 			getJob(jobs.get(i), date1, date2, command, priority, jobId, jsonObject, i);
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
 	
@@ -53,7 +53,7 @@ public class jobService{
 			jsonObject.put("status", "Adding job failed");
 		else 
 			jsonObject.put("status", "Job added succesfully with jobId " + jobId);
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	}
 	
@@ -64,7 +64,7 @@ public class jobService{
 		//todo
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	} 
 	
@@ -76,14 +76,19 @@ public class jobService{
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
 		Job j = server.getDatabase().getJob(job);
-		if(command != null)
-			j.setCommand(command);
-		if(priority != null)
-			j.setPriority(priority);
-		if(deadline != null)
-			j.setDeadline(deadline);
-		jsonObject.put("status", "Job changed successfully");
-		String result = "@Produces(\"application/json\") Output: \n\nJobService Output: \n\n" + jsonObject;
+		if(server.getDatabase().getJobSchedulingEvent(job) != null && server.getDatabase().getJobSchedulingEvent(job).getSchedStatus() < 1) {
+			if(command != null)
+				j.setCommand(command);
+			if(priority != null)
+				j.setPriority(priority);
+			if(deadline != null)
+				j.setDeadline(deadline);
+			jsonObject.put("status", "Job with jobId " + job + " changed successfully");
+		} else {
+			jsonObject.put("status", "Job with jobId " + job + " could not be changed");
+		}
+		
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
 	

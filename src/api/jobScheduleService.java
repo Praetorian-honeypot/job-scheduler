@@ -37,7 +37,7 @@ public class jobScheduleService{
 		ArrayList<JobSchedulingEvent> schedules = server.getDatabase().getAllJobSchedulingEvents(job);
 		for(int i=0; i<schedules.size(); i++)
 			getJobScheduleEvent(schedules.get(i), date1, date2, status, client, jsonObject, i);
-		String result = "@Produces(\"application/json\") Output: \n\nJobScheduleService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
 	
@@ -50,7 +50,7 @@ public class jobScheduleService{
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
 
-		String result = "@Produces(\"application/json\") Output: \n\nJobScheduleService Output: \n\n" + jsonObject;
+		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	 } 
 	
