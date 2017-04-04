@@ -84,6 +84,8 @@ public class ConnectedClient {
 			out.flush();
 		} catch (IOException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
+			server.log("Client can't be reached through socket, disconnecting client...");
+			server.removeClient(clientAddress);
 		}
 	}
 	

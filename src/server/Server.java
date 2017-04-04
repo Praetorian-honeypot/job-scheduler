@@ -1,5 +1,6 @@
 package server;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -80,15 +81,6 @@ public class Server extends Observable implements Runnable {
 			log(Level.SEVERE, e.toString(), e);
 		}
 	}
-	
-	public String getFixedAddress(InetSocketAddress fixAddress) {
-		String s = fixAddress.getAddress().toString();
-		if (!s.equals("localhost/127.0.0.1"))
-			s = s.substring(s.indexOf("/")+1);
-		else
-			s = "localhost";
-		return s;
-	}
 
 	@Override
 	public void run() {
@@ -144,7 +136,7 @@ public class Server extends Observable implements Runnable {
 	}
 	
 	public void addClient(Socket client, String cpuName, int cpuCores, String os, int memory, String displayName, int performance) {
-		InetSocketAddress clientAddress = new InetSocketAddress(client.getInetAddress(), client.getPort());
+		InetSocketAddress clientAddress = new InetSocketAddress(getFixedAddress(client.getInetAddress()), client.getPort());
 		if (!clientExists(clientAddress)) {
 			log("Adding client: " + client.getInetAddress() + " on port: " + client.getPort());
 			int time = (int) (new Date().getTime() / 1000);
@@ -158,9 +150,29 @@ public class Server extends Observable implements Runnable {
 		}
 	}
 	
+	public String getFixedAddress(InetSocketAddress fixAddress) {
+		String s = fixAddress.getAddress().toString();
+		if (s.equals("localhost/127.0.0.1"))
+			s = "localhost";
+		if (s.indexOf("/") != -1)
+			s = s.substring(s.indexOf("/")+1);
+		
+		return s;
+	}
+	
+	public String getFixedAddress(InetAddress fixAddress) {
+		String s = fixAddress.toString();
+		if (s.equals("localhost/127.0.0.1"))
+			s = "localhost";
+		if (s.indexOf("/") != -1)
+			s = s.substring(s.indexOf("/")+1);
+		return s;
+	}
+	
 	public synchronized void removeClient (InetSocketAddress client) {
 		if (clientExists(client)) {
 			log("Removing client: " + client.getHostName() + " on port: " + client.getPort());
+			serverInputHandler.disconnectClient(client);
 			ConnectedClient removeClient = getClient(client);
 			clients.remove(removeClient);
 			update();
@@ -175,7 +187,10 @@ public class Server extends Observable implements Runnable {
 		ConnectedClient findClient = null;
 		
 		for (ConnectedClient client : clients) {
-			if (searchClient.equals(client.getClientAddress()))
+			String searchClientAddress = getFixedAddress(searchClient);
+			String clientAddress = getFixedAddress(client.getClientAddress());
+			
+			if (searchClientAddress.equals(clientAddress) && searchClient.getPort() == client.getClientAddress().getPort())
 				findClient = client;
 		}
 		
@@ -187,11 +202,6 @@ public class Server extends Observable implements Runnable {
 	}
 
 	public synchronized void requestReport() {
-		if (clients.isEmpty()) {
-			log("Client list is empty!");
-			return;
-		}
-		
 		for (ConnectedClient client : clients) {
 			client.requestReport();
 		}

@@ -13,14 +13,20 @@ import org.json.JSONObject;
 public class SocketConnectionHandler implements Runnable {
 
 	private Socket client;
+	private InetSocketAddress clientAddress;
 	private volatile boolean running = true;
 	private InputStream in;
 	private DataInputStream dis;
 	private Server server;
 
-	public SocketConnectionHandler(Socket client, Server server) {
+	public SocketConnectionHandler(Socket client, Server server, InetSocketAddress clientAddress) {
 		this.client = client;
 		this.server = server;
+		this.setClientAddress(clientAddress);
+	}
+	
+	public void terminate() {
+		this.running = false;
 	}
 	
 	@Override
@@ -87,6 +93,14 @@ public class SocketConnectionHandler implements Runnable {
 		} catch (JSONException exception) {
 			server.log( Level.SEVERE, exception.toString(), exception );
 		}
+	}
+
+	public InetSocketAddress getClientAddress() {
+		return clientAddress;
+	}
+
+	public void setClientAddress(InetSocketAddress clientAddress) {
+		this.clientAddress = clientAddress;
 	}
 
 }

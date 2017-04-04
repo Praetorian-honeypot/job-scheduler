@@ -6,6 +6,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 
@@ -28,6 +30,7 @@ public class ServerInputHandler implements Runnable {
 	private Channel channel;
 	private static final String BROKER = readFile("server.txt");
 	private Consumer reportConsumer;
+	private ArrayList<SocketConnectionHandler> connectedClients = new ArrayList<SocketConnectionHandler>();
 	
 	public ServerInputHandler(Server server) {
 		this.server = server;
@@ -121,12 +124,18 @@ public class ServerInputHandler implements Runnable {
 			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
 			
 			ConnectedClient connectedClient = server.getClient(client);
+			if (connectedClient == null) {
+				server.log("ERROR: something went wrong while reading input on the server, aborting...");
+				return;
+			}
+			
 			switch (type) {
 				case "report":
 					double cpuLoad = Double.parseDouble(json.getString("cpuLoad"));
 					double memAvailable = Double.parseDouble(json.getString("memAvailable"));
 					double cpuTemp = Double.parseDouble(json.getString("cpuTemp"));
 					ClientReport report = new ClientReport(connectedClient.getClientAddress(), cpuLoad, memAvailable, cpuTemp);
+					
 					connectedClient.addReport(report);
 					server.log("Received report from client on " + clientAddress);
 					break;
@@ -149,12 +158,24 @@ public class ServerInputHandler implements Runnable {
 		}
 	}
 	
+	public void disconnectClient(InetSocketAddress client) {
+		for (Iterator<SocketConnectionHandler> it = connectedClients.iterator(); it.hasNext(); ) {
+			SocketConnectionHandler connection = it.next();
+			if (connection.getClientAddress().equals(client)) {
+				connection.terminate();
+				it.remove();
+			}
+		}
+	}
+	
 	public void run() {
 		try {
 			while (running) {
 				Socket clientSocket = socket.accept();
-				Runnable socketConnectionHandler = new SocketConnectionHandler(clientSocket, server);
+				InetSocketAddress clientAddress = new InetSocketAddress(server.getFixedAddress(clientSocket.getInetAddress()), clientSocket.getPort());
+				SocketConnectionHandler socketConnectionHandler = new SocketConnectionHandler(clientSocket, server, clientAddress);
 				new Thread(socketConnectionHandler).start();
+				connectedClients.add(socketConnectionHandler);
 			}
 		} catch (IOException exception) {
 			server.log(Level.SEVERE, exception.toString(), exception);
