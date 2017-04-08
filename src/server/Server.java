@@ -73,6 +73,7 @@ public class Server extends Observable implements Runnable {
 
 	private void initRMI() {
 		System.setProperty( "java.rmi.server.hostname", getFixedAddress(address) ) ;
+		log("Initiated RMI on: "+getFixedAddress(address));
 		try {
 			jobDispatcherRemote = new JobDispatcherRemote(this);
 			Registry registry = LocateRegistry.createRegistry(1099);
@@ -152,8 +153,6 @@ public class Server extends Observable implements Runnable {
 	
 	public String getFixedAddress(InetSocketAddress fixAddress) {
 		String s = fixAddress.getAddress().toString();
-		if (s.equals("localhost/127.0.0.1"))
-			s = "localhost";
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
 		
@@ -162,8 +161,6 @@ public class Server extends Observable implements Runnable {
 	
 	public String getFixedAddress(InetAddress fixAddress) {
 		String s = fixAddress.toString();
-		if (s.equals("localhost/127.0.0.1"))
-			s = "localhost";
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
 		return s;

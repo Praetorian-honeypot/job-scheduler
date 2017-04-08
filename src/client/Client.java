@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.rmi.NotBoundException;
@@ -269,8 +268,6 @@ public class Client extends Observable implements Runnable {
 	
 	private String getFixedAddress(InetSocketAddress fixAddress) {
 		String s = fixAddress.getAddress().toString();
-		if (s.equals("localhost/127.0.0.1"))
-			s = "localhost";
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
 		return s;

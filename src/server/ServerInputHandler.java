@@ -118,8 +118,6 @@ public class ServerInputHandler implements Runnable {
 			String type = json.getString("type");
 			
 			String clientAddress = json.getString("address").trim();
-			if (clientAddress.equals("localhost/127.0.0.1"))
-				clientAddress = "localhost";
 			int clientPort = Integer.parseInt(json.getString("port"));
 			InetSocketAddress client = new InetSocketAddress(clientAddress, clientPort);
 			
@@ -131,13 +129,13 @@ public class ServerInputHandler implements Runnable {
 			
 			switch (type) {
 				case "report":
+					server.log("Received report from client on " + clientAddress);
 					double cpuLoad = Double.parseDouble(json.getString("cpuLoad"));
 					double memAvailable = Double.parseDouble(json.getString("memAvailable"));
 					double cpuTemp = Double.parseDouble(json.getString("cpuTemp"));
 					ClientReport report = new ClientReport(connectedClient.getClientAddress(), cpuLoad, memAvailable, cpuTemp);
 					
 					connectedClient.addReport(report);
-					server.log("Received report from client on " + clientAddress);
 					break;
 				case "spec":
 					String cpuName = json.getString("cpuName");
