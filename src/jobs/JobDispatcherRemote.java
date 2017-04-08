@@ -49,7 +49,6 @@ public class JobDispatcherRemote extends UnicastRemoteObject implements JobDispa
 	
 	private void setJobStatus(Job job, InetSocketAddress client, String status) {
 		int clientId = server.getDatabase().findClient(client);
-		server.getClient(client).setAvailable(true);
 		server.getDatabase().setJobStatus(job.getId(), JobSchedulingEvent.getStatusCode(status), clientId);
 	}
 

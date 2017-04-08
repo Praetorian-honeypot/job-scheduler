@@ -87,6 +87,11 @@ public class SocketConnectionHandler implements Runnable {
 				case "disconnect":
 					server.removeClient(new InetSocketAddress(client.getInetAddress(), client.getPort()));
 					break;
+				case "finishedJob":
+					ConnectedClient connectedClient = server.getClient(clientAddress);
+					connectedClient.setAvailable(true);
+					server.log("Client "+connectedClient.getId()+" is available for a new job!");
+					break;
 				default:
 					server.log(Level.SEVERE, "ERROR: server doesn't recognize this input type: " + type, null);
 			}

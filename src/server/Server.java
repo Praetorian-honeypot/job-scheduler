@@ -94,7 +94,7 @@ public class Server extends Observable implements Runnable {
 		logger.log(Level.FINE, "Server is initiated");
 		
 		Timer timer = new Timer();
-		timer.schedule(new ReportSender(this), 0, 5000);
+		timer.schedule(new ReportSender(this), 0, 60000);
 		
 		try {
 			jobDispatcherRemote.scheduleJobs();
@@ -156,6 +156,8 @@ public class Server extends Observable implements Runnable {
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
 		
+		if (s.equals("127.0.0.1"))
+			s = "localhost";
 		return s;
 	}
 	
@@ -163,6 +165,8 @@ public class Server extends Observable implements Runnable {
 		String s = fixAddress.toString();
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
+		if (s.equals("127.0.0.1"))
+			s = "localhost";
 		return s;
 	}
 	
@@ -188,6 +192,17 @@ public class Server extends Observable implements Runnable {
 			String clientAddress = getFixedAddress(client.getClientAddress());
 			
 			if (searchClientAddress.equals(clientAddress) && searchClient.getPort() == client.getClientAddress().getPort())
+				findClient = client;
+		}
+		
+		return findClient;
+	}
+	
+	public ConnectedClient getClientById(int clientId) {
+		ConnectedClient findClient = null;
+		
+		for (ConnectedClient client : clients) {
+			if (client.getId() == clientId)
 				findClient = client;
 		}
 		
@@ -249,8 +264,9 @@ public class Server extends Observable implements Runnable {
 		try {
 			if (jobDispatcherRemote.hasJobs()) {
 				for (ConnectedClient client : clients) {
-					if (client.isAvailable())
+					if (client.isAvailable()) {
 						client.requestRunJob();
+					}
 				}
 			}
 		} catch (RemoteException e) {

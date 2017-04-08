@@ -160,15 +160,10 @@ public class SQLite {
 			stmt.executeUpdate();
 			
 			try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-	            if (generatedKeys.next()) {
-	            	PreparedStatement stmt2 = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus) VALUES (?,?,?)"); 
+	            if (generatedKeys.next()) { 
 	    			int jobId = stmt.getGeneratedKeys().getInt(1);
 	    			int schedStatus = JobSchedulingEvent.getStatusCode("entered");
-	    			int time = (int) (new Date().getTime() / 1000);
-	    			stmt2.setInt(1, jobId);
-	    			stmt2.setInt(2, time);
-	    			stmt2.setInt(3, schedStatus);
-	    			stmt2.executeUpdate();
+	    			setJobStatus(jobId, schedStatus);
 	    			server.log("Succesfully added job with id: " + jobId);
 	    			return jobId;
 	            }
@@ -243,7 +238,6 @@ public class SQLite {
 
 	public void setJobStatus(int jobId, int schedStatus, int clientId) {
 		Job job = getJob(jobId);
-		
 		if (job == null) {
 			return;
 		}
@@ -251,7 +245,7 @@ public class SQLite {
 		if (JobSchedulingEvent.getStatus(schedStatus) == null) {
 			server.log("ERROR: this is an invalid scheduling status");
 			return;
-		}			
+		}
 		
 		try {
 			PreparedStatement stmt = c.prepareStatement("INSERT INTO jobSchedulingEvents (job, eventDate, schedStatus, client) VALUES (?,?,?,?)"); 

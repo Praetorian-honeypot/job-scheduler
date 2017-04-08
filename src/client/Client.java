@@ -217,6 +217,10 @@ public class Client extends Observable implements Runnable {
 		send(hardwareSpec(null));
 	}
 	
+	public void sendClientFinished() {
+		send(getCommand("finishedJob"));
+	}
+	
 	public JSONObject hardwareSpec(JSONObject in){
 		JSONObject specData;
 		if(in != null){
@@ -270,6 +274,8 @@ public class Client extends Observable implements Runnable {
 		String s = fixAddress.getAddress().toString();
 		if (s.indexOf("/") != -1)
 			s = s.substring(s.indexOf("/")+1);
+		if (s.equals("127.0.0.1"))
+			s = "localhost";
 		return s;
 	}
 
@@ -368,6 +374,7 @@ public class Client extends Observable implements Runnable {
 			} catch (RemoteException exception) {
 				logger.log( Level.SEVERE, exception.toString(), exception );
 			}
+			sendClientFinished();
 		} else {
 			log("No RMI connection has been made: unable to run job.");
 		}
