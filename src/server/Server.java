@@ -33,6 +33,7 @@ public class Server extends Observable implements Runnable {
 	private ArrayList<ConnectedClient> clients = new ArrayList<ConnectedClient>();
 	private SQLite database;
 	private JobDispatcher jobDispatcherRemote;
+	private Registry registry;
 
 	public static final String API_URI = "http://localhost:8080/api/";
 	
@@ -72,12 +73,15 @@ public class Server extends Observable implements Runnable {
 	}
 
 	private void initRMI() {
+		System.setProperty("sun.rmi.loader.logLevel", "verbose");
+		System.setProperty("sun.rmi.server.logLevel", "verbose");
+		System.setProperty("sun.rmi.transport.logLevel", "verbose");
 		System.setProperty( "java.rmi.server.hostname", getFixedAddress(address) ) ;
-		log("Initiated RMI on: "+getFixedAddress(address));
+		log("Initiating RMI on: "+getFixedAddress(address));
 		try {
 			jobDispatcherRemote = new JobDispatcherRemote(this);
-			Registry registry = LocateRegistry.createRegistry(1099);
-			registry.rebind("jobDispatcher", jobDispatcherRemote);
+			registry = LocateRegistry.createRegistry(1099);
+			registry.rebind(JobDispatcher.LOOKUP_NAME, jobDispatcherRemote);
 		} catch (RemoteException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}

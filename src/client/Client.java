@@ -4,13 +4,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,13 +80,15 @@ public class Client extends Observable implements Runnable {
 	}
 	
 	private void initRMI(String hostIP) {
-		log("Initiating RMI on host: " + hostIP);
-		System.setProperty("java.rmi.server.hostname", hostIP);
+		System.setProperty("sun.rmi.loader.logLevel", "verbose");
+		System.setProperty("sun.rmi.server.logLevel", "verbose");
+		System.setProperty("sun.rmi.transport.logLevel", "verbose");
+		log("Connecting to RMI on host: " + hostIP);
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostIP, 1099);
-			this.jobDispatcher = (JobDispatcher) registry.lookup("jobDispatcher");
+			this.jobDispatcher = (JobDispatcher) Naming.lookup("rmi://" + hostIP + "/" + JobDispatcher.LOOKUP_NAME);
+			log(""+jobDispatcher.hasJobs());
 			log("Succesfully initiated RMI");
-		} catch (RemoteException | NotBoundException e) {
+		} catch (RemoteException | NotBoundException | MalformedURLException e) {
 			log(Level.SEVERE, e.toString(), e);
 		}
 	}

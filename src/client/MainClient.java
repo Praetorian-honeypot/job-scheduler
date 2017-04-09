@@ -4,7 +4,7 @@ import java.net.InetSocketAddress;
 
 public class MainClient {
 	public static void main(String args[]) {
-		String address = "localhost";
+		String address = "82.73.253.112";
 		int port = 8901;
 		if (args.length == 1) {
 			port = Integer.parseInt(args[0]);

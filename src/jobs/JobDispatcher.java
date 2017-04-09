@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.rmi.*;
 
 public interface JobDispatcher extends Remote {
+	public static final String LOOKUP_NAME = "jobDispatcher";
 	public void addJob(Job job) throws RemoteException;
 	public void scheduleJobs() throws RemoteException;
 	public Job getJob(InetSocketAddress client) throws RemoteException;
