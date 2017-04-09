@@ -4,6 +4,8 @@ from django.template import loader
 from django import forms
 import logging
 from dateutil.parser import parse
+from requests.utils import quote
+from django.urls import reverse
 
 from time import strftime
 
@@ -105,14 +107,14 @@ def addJob(request):
         form = AddJobForm(request.POST)
 
         if form.is_valid():
-            payload = {'command':request.POST['command'],'priority':request.POST['priority']}
             try:
-                requests.post('http://localhost:8080/jobservice/addjob')
-            except Exception:
+                requests.post('http://localhost:8080/jobservice/addjob?command=%s&priority=%s&deadline=%d' % (quote(request.POST['command']),request.POST['priority'],1))
+            except Exception as e:
+                print e
                 context = {'form' : form, 'alert': 'Server unreachable.'}
                 return HttpResponse(template.render(context,request))
 
-            return HttpResponseRedirect('/jobs/')
+            return HttpResponseRedirect(reverse('index'))
     else:
         form = AddJobForm()
 
