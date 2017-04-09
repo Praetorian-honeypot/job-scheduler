@@ -46,9 +46,11 @@ public class Client extends Observable implements Runnable {
 	public static final String BROKER = readFile("server.txt");
 	private Channel channel;
 	private JobDispatcher jobDispatcher;
+	private int serverPort;
 
-	public Client(InetSocketAddress address) {
+	public Client(InetSocketAddress address, int serverPort) {
 		this.address = address;
+		this.serverPort = serverPort;
 		initLogger();
 	}
 
@@ -106,6 +108,9 @@ public class Client extends Observable implements Runnable {
 	@Override
 	public void run() {
 		logger.log(Level.FINE, "Client is initiated");
+		//Connect without UI
+		//InetSocketAddress serverAddress = new InetSocketAddress(BROKER, serverPort);
+		//this.connect(serverAddress);
 		this.setChanged();
 		this.notifyObservers();
 	}

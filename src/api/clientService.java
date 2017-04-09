@@ -1,5 +1,6 @@
 package api;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -29,7 +30,7 @@ public class clientService{
 	@GET
 	@Produces("application/json")
 	public Response getClient(	@QueryParam("address") String addr, @QueryParam("port") Integer port,
-								@QueryParam("cores") Integer cores, @QueryParam("memory") Integer memory) throws JSONException {
+								@QueryParam("cores") Integer cores, @QueryParam("memory") Integer memory) throws JSONException, IOException {
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
 		port = (port == null) ? 0 : port;
@@ -70,7 +71,7 @@ public class clientService{
 	}
 
 	
-	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) {
+	private void getClient(ConnectedClient client, int i, JSONObject jsonObject, Integer cores, Integer memory) throws IOException {
 		if(cores != null) 
 			if(client.getCpuCores() < cores)
 				return;

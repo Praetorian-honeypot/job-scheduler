@@ -1,6 +1,7 @@
 package api;
 
 import java.util.Date;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,10 +46,11 @@ public class jobService{
 	@Path("/addjob")
 	@POST
 	@Produces("application/json")
-	public Response addJob(@QueryParam("command") String command, @QueryParam("priority") Integer priority, @QueryParam("deadline") Integer deadline) throws JSONException {
+	public Response addJob(@QueryParam("command") String command, @QueryParam("priority") Integer priority, @QueryParam("deadline") Integer deadline) throws JSONException, RemoteException {
 		JSONObject jsonObject = new JSONObject();
 		Server server = (Server) config.getProperty("server");
 		int jobId = server.getDatabase().addJob(command, priority, (int)(System.currentTimeMillis() / 1000) + 604800);
+		server.getJobDispatcherRemote().addJob(new Job(jobId, command, priority, deadline, 0));
 		if(server.getDatabase().getJob(jobId) == null) 
 			jsonObject.put("status", "Adding job failed");
 		else 
@@ -56,17 +58,7 @@ public class jobService{
 		String result = jsonObject.toString();
 		return Response.status(200).entity(result).build();
 	}
-	
-	@Path("/removejob")
-	@DELETE
-	@Produces("application/json")
-	public Response removeJob(@QueryParam("job") Integer job) throws JSONException {
-		//todo
-		JSONObject jsonObject = new JSONObject();
-		Server server = (Server) config.getProperty("server");
-		String result = jsonObject.toString();
-		return Response.status(200).entity(result).build();
-	} 
+
 	
 	@Path("/changejob")
 	@PUT

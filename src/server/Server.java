@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import api.RestAPI;
 import database.SQLite;
+import jobs.Job;
 import jobs.JobDispatcher;
 import jobs.JobDispatcherRemote;  
 
