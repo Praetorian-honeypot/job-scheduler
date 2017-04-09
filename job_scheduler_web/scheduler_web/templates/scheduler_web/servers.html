@@ -5,13 +5,15 @@
 
 <table class="table">
     <tr>
-        <th>Hostname</th>
+        <th>Name</th>
+        <th>Address</th>
         <th>CPU</th>
         <th>Memory</th>
     </tr>
     {% for ser in server_list %}
     <tr>
-        <td>{{ ser.groupPath }}<b><a href="{% url 'serverDetail' ser.pk %}">{{ ser.hostname }}</a></b></td>
+        <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.displayName }}</a></td>
+        <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.address }}</a></td>
         <td>{{ ser.cpuName }}</td>
         <td>{{ ser.memoryAmount }} GB</td>
     </tr>

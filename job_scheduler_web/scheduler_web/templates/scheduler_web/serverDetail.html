@@ -8,10 +8,10 @@
 </button>
 </a>
 
-<h1 >{{ server.groupPath }}{{ server.hostname }}</h1>
+<h1 >{{ server.hostname }}</h1>
 
 <table class="table">
-    <tr>    <td><b>Hostname</b></td><td>{{ server.groupPath }}<b>{{ server.hostname }}</b></td> </tr>
+    <tr>    <td><b>Hostname</b></td><td>{{ server.hostname }}</td> </tr>
     <tr>    <td><b>CPU</b></td><td>{{ server.cpuName }} ({{server.cpuCores}} cores)</td>    <tr>
     <tr>    <td><b>Memory Amount</b></td><td>{{ server.memoryAmount }} GB</td>  <tr>
 </table>
@@ -55,10 +55,10 @@ function unpack(rows, key) {
 var trace1 = {
         x: unpack(rows,'date'),
         y: unpack(rows,'cpuLoad').map(function(x) {
-            return (100.0 * x / {{ server.cpuCores }}).toFixed(1)
+            return (100.0 * x).toFixed(1)
         }),
         text: unpack(rows,'cpuLoad').map(function(x) {
-            return x + ' (' + {{ server.cpuCores }} + ' cores)';
+            return x * {{ server.cpuCores }} + ' (' + {{ server.cpuCores }} + ' cores)';
         }),
         type: 'scatter'
 };

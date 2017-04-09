@@ -12,7 +12,7 @@ class LoadMeasurement(models.Model):
     memoryLoad = models.FloatField()
 
     def cpuLoadPercentage(self):
-        return 100.0 * self.cpuLoad / self.server.cpuCores
+        return 100.0 * self.cpuLoad
     def memoryLoadPercentage(self):
         return 100.0 * self.memoryLoad / self.server.memoryAmount
 
@@ -24,32 +24,19 @@ class Server(models.Model):
     cpuName = models.CharField(max_length = 32)
     cpuCores = models.IntegerField(default = 1, blank=True)
     memoryAmount = models.FloatField()
-    serverGroup = models.ForeignKey('ServerGroup', on_delete = models.SET_NULL, null=True, blank=True)
 
     idOnServer = models.IntegerField(default = -1)
 
     def __str__(self):
         return self.hostname
 
-    def groupPath(self):
-        if self.serverGroup is None:
-            return ""
+    def latestLoadMeasurement(self):
+        lms = LoadMeasurement.objects.filter(server=self)
+
+        if len(lms) > 0:
+            return lms.order_by('-date')[0]
         else:
-            return self.serverGroup.groupPath() + self.serverGroup.groupName + "/"
-
-class ServerGroup(models.Model):
-    groupName = models.CharField(max_length = 32)
-    superGroup = models.ForeignKey('ServerGroup', on_delete = models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return self.groupName
-
-    def groupPath(self):
-        if self.superGroup is None:
-            return ""
-        else:
-            return self.superGroup.groupPath() + self.superGroup.groupName + "/"
-
+            return None
 
 class Job(models.Model):
     command = models.CharField(max_length=256)

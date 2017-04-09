@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django import forms
 
@@ -18,7 +18,26 @@ import requests
 from .JSONserializer import ServerSerializer
 
 def index(request):
-    context = {}
+    job_list = Job.objects.order_by('-priority')
+    server_list = Server.objects.order_by('displayName')
+
+    running_job_list = [x for x in list(job_list) if x.schedStatus().schedStatus == 2]
+    entered_job_list = [x for x in list(job_list) if x.schedStatus().schedStatus == 0]
+
+    server_loads = [x.latestLoadMeasurement() for x in server_list if x.latestLoadMeasurement() != None]
+
+    if len(server_loads) > 0:
+        avg_cpu_load = sum([x.cpuLoad for x in server_loads])/len(server_loads) * 100
+    else:
+        avg_cpu_load = 0
+
+    num_servers = len(server_list)
+
+    context = {'running_job_list':running_job_list,
+                'entered_job_list':entered_job_list,
+                'server_list': server_list,
+                'avg_cpu_load' : avg_cpu_load,
+                'num_servers' : num_servers}
     template = loader.get_template('scheduler_web/index.html')
     return HttpResponse(template.render(context,request))
 
@@ -84,7 +103,12 @@ def addJob(request):
 
         if form.is_valid():
             payload = {'command':request.POST['command'],'priority':request.POST['priority']}
-            requests.post('http://localhost:8080/jobservice/addjob')
+            try:
+                requests.post('http://localhost:8080/jobservice/addjob')
+            except Exception:
+                context = {'form' : form, 'alert': 'Server unreachable.'}
+                return HttpResponse(template.render(context,request))
+
             return HttpResponseRedirect('/jobs/')
     else:
         form = AddJobForm()

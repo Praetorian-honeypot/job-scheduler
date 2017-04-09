@@ -1,5 +1,88 @@
 {% extends 'scheduler_web/base.html' %}
 {% load staticfiles %}
 {% block content %}
-<h1 >Hello, World!</h1>
+<h1>Job Scheduler</h1>
+<div class="row">
+<div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">Jobs</div>
+            <div class="panel-body">
+                <p><b> Number of queued jobs: </b> {{ running_job_list|length }} </p>
+                <p><b> Number of running jobs: </b> {{ entered_job_list|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel panel-default">
+            <div class="panel-heading">Servers</div>
+            <div class="panel-body">
+                    <p><b> Number of servers active: </b> {{ num_servers }} </p>
+                    <p><b> Average server CPU load: </b> {{ avg_cpu_load }}%</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Servers</div>
+            <table class="table">
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>CPU</th>
+                    <th>Memory</th>
+                </tr>
+                {% for ser in server_list %}
+                <tr>
+                    <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.displayName }}</a></td>
+                    <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.address }}</a></td>
+                    <td>{{ ser.cpuName }}</td>
+                    <td>{{ ser.memoryAmount }} GB</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Active Jobs</div>
+            <table class="table">
+                <tr>
+                    <th>Command</th>
+                    <th>Priority</th>
+                    <th>Last updated</th>
+                </tr>
+                {% for job in running_job_list %}
+                <tr>
+                    <td><a href='{% url 'jobDetail' job.pk %}'>{{ job.command|truncatechars:9 }}</a></td>
+                    <td>{{ job.priority }}</td>
+                    <td>{{ job.schedStatus.eventDate }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Queued Jobs</div>
+            <table class="table">
+                <tr>
+                    <th>Command</th>
+                    <th>Priority</th>
+                    <th>Last updated</th>
+                </tr>
+                {% for job in entered_job_list %}
+                <tr>
+                    <td><a href='{% url 'jobDetail' job.pk %}'>{{ job.command|truncatechars:9 }}</a></td>
+                    <td>{{ job.priority }}</td>
+                    <td>{{ job.schedStatus.eventDate }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
