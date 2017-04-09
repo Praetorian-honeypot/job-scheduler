@@ -24,6 +24,7 @@ public class ConnectedClient {
 	private int totalMemory;
 	private String operatingSystem;
 	private String hostname;
+	private String displayName;
 	private int performance;
 	private int id;
 	private int time;
@@ -44,10 +45,9 @@ public class ConnectedClient {
 		this.operatingSystem = os;
 		this.totalMemory = memory;
 		this.performance = performance;
+		this.displayName = hostname;
 		this.id = id;
 		this.time=time;
-		
-		
 	}
 
 	private void findExistingClientRecords() {
@@ -196,8 +196,7 @@ public class ConnectedClient {
 	}
 
 	public String getDisplayName() {
-		SystemInfo sysInfo = new SystemInfo();
-		return sysInfo.getOperatingSystem().getNetworkParams().getHostName();
+		return displayName;
 	}
 
 	public boolean isAvailable() {
