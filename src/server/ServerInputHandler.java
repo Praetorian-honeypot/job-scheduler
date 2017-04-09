@@ -102,9 +102,8 @@ public class ServerInputHandler implements Runnable {
 		@Override
 		public void run() {
 			try {
-				while(handler.running){
-					handler.channel.basicConsume("serverIn",true,handler.reportConsumer);
-				}
+				handler.channel.basicConsume("serverIn",true,handler.reportConsumer);
+				server.log("Report consumer MQ initiated");
 			} catch (IOException exception) {
 				handler.server.log( Level.SEVERE, exception.toString(), exception );
 			}
