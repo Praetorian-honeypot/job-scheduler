@@ -22,6 +22,8 @@ def fetchServers():
 
     json = r.json()
 
+    print r.text
+
     i = 0
     while(True):
         try:
@@ -45,17 +47,21 @@ def fetchJobs():
 
     json = r.json()
 
+    print r.text
+
     i = 0
     while(True):
         try:
             job = Job(idOnServer = json[str(i)][0],
-                    deadline = json[str(i)][1],
+                    deadline = parse(json[str(i)][1]),
                     command = json[str(i)][2],
                     priority = json[str(i)][3],)
             job.save()
             i += 1
-        except:
+        except Exception as e:
+            print e
             break
+
 
 def fetchServerReports():
     LoadMeasurement.objects.all().delete()
@@ -64,39 +70,52 @@ def fetchServerReports():
 
     json = r.json()
 
+    print r.text
+
     i = 0
     while(True):
         try:
-            server = Server.objects.get(adress=json[str(i)][0])
+            server = Server.objects.get(address=json[str(i)][0])
 
-            lm = LoadMeasurement(date = json[str(i)][4],
+            lm = LoadMeasurement(date = parse(json[str(i)][4]),
                 cpuLoad = json[str(i)][1],
                 memoryLoad = json[str(i)][2],
                 server = server)
 
             lm.save()
             i += 1
-        except:
+        except Exception as e:
+            print e
             break
 
 def fetchJobSchedules():
     JobSchedulingEvent.objects.all().delete()
 
-    r = requests.get("http://localhost:8080/api/jobscheduleservice/all")
+    for job in Job.objects.all():
+        print job.idOnServer
+        r = requests.get("http://localhost:8080/api/jobscheduleservice?job=%d" % job.idOnServer)
 
-    json = r.json()
-
-    i = 0
-    while(True):
+        print r.text
         try:
-            server = Server.objects.get(idOnServer=json[str(i)][3])
-            job = Job.objects.get(idOnServer=json[str(i)][0])
+            json = r.json()
+            i=0
+            while(True):
+                try:
+                    if int(json[str(i)][3]) > 0:
+                        server = Server.objects.get(idOnServer=json[str(i)][3])
 
-            schedEvent = JobSchedulingEvent(eventDate = json[str(i)][1],
-                status = json[str(i)][2],
-                server = server)
-
-            schedEvent.save()
-            i += 1
-        except:
-            break
+                        schedEvent = JobSchedulingEvent(job=job,
+                            eventDate = parse(json[str(i)][1]),
+                            schedStatus = json[str(i)][2],
+                            server = server)
+                    else:
+                        schedEvent = JobSchedulingEvent(job=job,
+                            eventDate = parse(json[str(i)][1]),
+                            schedStatus = json[str(i)][2])
+                    i+=1
+                    schedEvent.save()
+                except Exception as e:
+                    print e
+                    break
+        except Exception as e:
+            print e

@@ -37,9 +37,9 @@
 
 <table class="table">
     <tr>
-        <td><b>Date</b></td><td>{{ load.date }}<</td>
+        <td><b>Date</b></td><td>{{ load.date }}</td>
         <td><b>CPU load</b></td><td>{{ load.cpuLoad }}</td>
-        <td><b>Memory usage</b></td><td>{{ load.memoryLoad }} GB</td>
+        <td><b>Memory available</b></td><td>{{ load.memoryLoad }} MB</td>
     </tr>
 </table>
 <a href='{% url 'loadMeasurementsCSV' server.pk %}'> CSV </a>
@@ -66,7 +66,7 @@ var trace1 = {
 var trace2 = {
         x: unpack(rows,'date'),
         y: unpack(rows,'memoryLoad'),
-        text: unpack(rows,'memoryLoad').map(function(x) { return (100.0 * x / {{ server.memoryAmount }}).toFixed(1)+ '% (' +{{ server.memoryAmount }}.toFixed(1)+ ' GB)'; }),
+        text: unpack(rows,'memoryLoad').map(function(x) { return ( x / {{ server.memoryAmount }} / 10000).toFixed(1)+ '% (' +{{ server.memoryAmount }}.toFixed(1)+ ' MB)'; }),
         type: 'scatter',
         xaxis: 'x2',
         yaxis: 'y2',
@@ -76,7 +76,7 @@ var layout = {
   xaxis: {title: 'Measurement Date', domain: [0, 0.45]},
   yaxis: {title: 'CPU Load (%)'},
   xaxis2: {title: 'Measurement Date', domain: [0.55, 1]},
-  yaxis2: {title: 'Memory Usage (GB)', anchor: 'x2'},
+  yaxis2: {title: 'Memory Available (MB)', anchor: 'x2'},
 };
 
 data = [trace1, trace2];

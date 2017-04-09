@@ -36,7 +36,7 @@
                     <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.displayName }}</a></td>
                     <td><a href="{% url 'serverDetail' ser.pk %}">{{ ser.address }}</a></td>
                     <td>{{ ser.cpuName }}</td>
-                    <td>{{ ser.memoryAmount }} GB</td>
+                    <td>{{ ser.memoryAmount }} MB</td>
                 </tr>
                 {% endfor %}
             </table>
